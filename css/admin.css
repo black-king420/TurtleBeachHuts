@@ -1,0 +1,95 @@
+/* Turtle Beach Huts Karachi — Admin dashboard */
+body.admin-body{background:var(--sand);min-height:100vh;}
+
+.admin-shell{display:flex;min-height:100vh;}
+
+.admin-sidebar{
+  width:250px;flex-shrink:0;background:var(--ink);color:rgba(255,248,238,.75);
+  padding:1.6rem 1.1rem;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:1.6rem;
+  transition:transform .3s var(--ease);
+}
+.admin-sidebar .logo-mark{color:#fff;font-family:var(--font-display);font-weight:700;font-size:1.05rem;display:flex;align-items:center;gap:.6rem;padding:.4rem;}
+.admin-sidebar .logo-mark img{width:38px;height:38px;object-fit:cover;}
+.admin-nav{display:flex;flex-direction:column;gap:.3rem;flex:1;}
+.admin-nav button{
+  display:flex;align-items:center;gap:.7rem;padding:.7rem .9rem;border-radius:12px;
+  background:none;border:none;color:inherit;font-weight:600;font-size:.87rem;text-align:left;cursor:pointer;
+  font-family:var(--font-body);transition:all .2s var(--ease);
+}
+.admin-nav button i{width:18px;text-align:center;}
+.admin-nav button:hover{background:rgba(255,255,255,.06);color:#fff;}
+.admin-nav button.active{background:linear-gradient(135deg,var(--sunset),var(--sunset-deep));color:#fff;}
+.admin-sidebar-foot{border-top:1px solid rgba(255,255,255,.1);padding-top:1rem;font-size:.78rem;}
+.admin-badge-mode{
+  display:inline-flex;align-items:center;gap:.4rem;font-family:var(--font-mono);font-size:.68rem;
+  padding:.3rem .6rem;border-radius:99px;background:rgba(246,196,69,.15);color:var(--gold);margin-bottom:.8rem;
+}
+.admin-badge-mode.live{background:rgba(46,158,108,.15);color:#4ee6a4;}
+
+.admin-main{flex:1;min-width:0;padding:1.6rem 2rem 4rem;}
+.admin-topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin-bottom:1.8rem;
+}
+.admin-topbar h1{font-size:1.5rem;}
+.admin-sidebar-toggle{display:none;}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1rem;margin-bottom:2rem;}
+.stat-card{
+  background:var(--white);border-radius:18px;padding:1.3rem 1.4rem;box-shadow:var(--shadow-soft);
+  border:1px solid rgba(16,48,47,.06);
+}
+.stat-card .lbl{font-family:var(--font-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);}
+.stat-card .val{font-family:var(--font-display);font-size:1.9rem;font-weight:700;margin-top:.3rem;}
+.stat-card .delta{font-size:.76rem;color:var(--success);margin-top:.2rem;}
+
+.admin-panel-card{
+  background:var(--white);border-radius:20px;box-shadow:var(--shadow-soft);border:1px solid rgba(16,48,47,.06);
+  padding:1.5rem;margin-bottom:1.6rem;
+}
+.admin-panel-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;margin-bottom:1.2rem;}
+.admin-panel-head h3{font-size:1.1rem;}
+
+.admin-filters{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;}
+.admin-filters input,.admin-filters select{
+  padding:.55rem .9rem;border-radius:10px;border:1px solid rgba(16,48,47,.16);font-size:.85rem;font-family:var(--font-body);background:var(--shell);color:var(--ink);
+}
+
+.table-wrap{overflow-x:auto;}
+table.admin-table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:760px;}
+table.admin-table th{
+  text-align:left;font-family:var(--font-mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--ink-faint);padding:.6rem .8rem;border-bottom:2px solid rgba(16,48,47,.08);white-space:nowrap;
+}
+table.admin-table td{padding:.75rem .8rem;border-bottom:1px solid rgba(16,48,47,.06);vertical-align:middle;}
+table.admin-table tr:hover td{background:rgba(232,114,44,.04);}
+
+.status-pill{
+  display:inline-flex;align-items:center;gap:.35rem;padding:.28rem .7rem;border-radius:99px;
+  font-size:.72rem;font-weight:800;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.03em;
+}
+.status-pill.pending{background:rgba(246,196,69,.18);color:#a67506;}
+.status-pill.confirmed{background:rgba(46,158,108,.16);color:#1b7a4e;}
+.status-pill.cancelled{background:rgba(211,59,59,.14);color:var(--danger);}
+
+.row-actions{display:flex;gap:.4rem;flex-wrap:wrap;}
+.row-actions button{
+  border:none;background:var(--sand);color:var(--ink);width:30px;height:30px;border-radius:8px;
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:.78rem;transition:all .2s var(--ease);
+}
+.row-actions button:hover{background:var(--ink);color:#fff;}
+.row-actions button.del:hover{background:var(--danger);}
+
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--ink-faint);}
+.empty-state i{font-size:2.2rem;margin-bottom:.8rem;display:block;}
+
+.admin-guard-screen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ink);color:#fff;text-align:center;padding:2rem;
+}
+
+@media (max-width:900px){
+  .admin-sidebar{position:fixed;left:0;top:0;bottom:0;z-index:1200;transform:translateX(-100%);}
+  .admin-sidebar.open{transform:translateX(0);}
+  .admin-main{padding:1.2rem 1rem 4rem;}
+  .admin-sidebar-toggle{display:inline-flex;}
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Turtle Beach Huts Karachi",
+  "short_name": "TBHK",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#FFF8EE",
+  "theme_color": "#E8722C",
+  "icons": [
+    { "src": "images/logo.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "images/logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
