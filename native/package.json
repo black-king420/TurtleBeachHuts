@@ -1,0 +1,36 @@
+{
+  "name": "tbhk-app",
+  "version": "1.0.0",
+  "description": "Turtle Beach Huts Karachi — native wrappers (Android / iOS via Capacitor, Windows / macOS / Linux via Electron)",
+  "main": "electron/main.js",
+  "scripts": {
+    "sync-web": "node sync-web.js",
+    "cap:add:android": "npm run sync-web && npx cap add android",
+    "cap:add:ios": "npm run sync-web && npx cap add ios",
+    "cap:sync": "npm run sync-web && npx cap sync",
+    "cap:android": "npm run cap:sync && npx cap open android",
+    "cap:ios": "npm run cap:sync && npx cap open ios",
+    "desktop": "electron .",
+    "desktop:build": "npm run sync-web && electron-builder"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/ios": "^6.0.0",
+    "@capacitor/splash-screen": "^6.0.0",
+    "@capacitor/status-bar": "^6.0.0"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.turtlebeachhutskarachi.app",
+    "productName": "Turtle Beach Huts Karachi",
+    "files": ["electron/**", "www/**"],
+    "win": { "target": "nsis", "icon": "../images/icons/icon-512.png" },
+    "mac": { "target": "dmg", "category": "public.app-category.travel", "icon": "../images/icons/icon-512.png" },
+    "linux": { "target": "AppImage", "category": "Travel", "icon": "../images/icons/icon-512.png" }
+  }
+}
