@@ -1,0 +1,156 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "bookings": {
+      ".read": "auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com')",
+      ".indexOn": [
+        "createdAt",
+        "status"
+      ],
+      "$bookingId": {
+        ".write": "(!data.exists() && newData.exists()) || (auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com'))",
+        ".validate": "newData.hasChildren(['name','phone','package','date','status','createdAt'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+        },
+        "phone": {
+          ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 40"
+        },
+        "whatsapp": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "email": {
+          ".validate": "newData.isString() && newData.val().length <= 254"
+        },
+        "package": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+        },
+        "date": {
+          ".validate": "newData.isString() && newData.val().length <= 20"
+        },
+        "time": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "adults": {
+          ".validate": "newData.isString() || newData.isNumber()"
+        },
+        "children": {
+          ".validate": "newData.isString() || newData.isNumber()"
+        },
+        "request": {
+          ".validate": "newData.isString() && newData.val().length <= 1500"
+        },
+        "coupon": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "status": {
+          ".validate": "(!data.exists() && newData.val() === 'Pending') || (auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com'))"
+        },
+        "createdAt": {
+          ".validate": "newData.val() === now || data.exists()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "messages": {
+      ".read": "auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com')",
+      ".indexOn": [
+        "createdAt"
+      ],
+      "$messageId": {
+        ".write": "(!data.exists() && newData.exists()) || (auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com'))",
+        ".validate": "newData.hasChildren(['name','email','message','read','createdAt'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+        },
+        "email": {
+          ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 254"
+        },
+        "phone": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "subject": {
+          ".validate": "newData.isString() && newData.val().length <= 200"
+        },
+        "message": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 3000"
+        },
+        "read": {
+          ".validate": "(!data.exists() && newData.val() === false) || (auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com'))"
+        },
+        "createdAt": {
+          ".validate": "newData.val() === now || data.exists()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "newsletter": {
+      ".read": "auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com')",
+      "$entryId": {
+        ".write": "(!data.exists() && newData.exists()) || (auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com'))",
+        ".validate": "newData.hasChildren(['email','createdAt'])",
+        "email": {
+          ".validate": "newData.isString() && newData.val().length <= 254 && newData.val().matches(/^.+@.+\\..+$/)"
+        },
+        "createdAt": {
+          ".validate": "newData.val() === now || data.exists()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "catalog": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com')",
+      "$itemId": {
+        ".validate": "newData.hasChildren(['name'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+        },
+        "price": {
+          ".validate": "newData.val() === null || (newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000)"
+        },
+        "img": {
+          ".validate": "newData.isString() && newData.val().length <= 900000"
+        }
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || (auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com')))",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['role'])",
+        "role": {
+          ".validate": "newData.val() === 'customer' && (!data.exists() || data.val() === 'customer')"
+        },
+        "name": {
+          ".validate": "newData.isString() && newData.val().length <= 120"
+        },
+        "email": {
+          ".validate": "newData.isString() && newData.val().length <= 254"
+        },
+        "phone": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "provider": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "createdAt": {
+          ".validate": "true"
+        },
+        "updatedAt": {
+          ".validate": "true"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    }
+  }
+}

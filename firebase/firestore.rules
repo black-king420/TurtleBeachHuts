@@ -1,0 +1,102 @@
+rules_version = '2';
+
+// Turtle Beach Huts Karachi — Cloud Firestore security rules
+// Deploy:  firebase deploy --only firestore:rules      (or paste into Console → Firestore → Rules)
+//
+// Model: the public can CREATE bookings / messages / newsletter sign-ups (with strict validation)
+// but can never read, edit or delete them. Only admins can. Catalog (packages & prices) is public
+// to read and admin-only to write. Everything not listed is denied.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+    function signedIn() { return request.auth != null; }
+
+    // Admin = one of these emails AND the email is verified (stops someone registering an
+    // admin's address with a password and gaining access). Sign in with Google, or verify the
+    // email, for the admin account. Keep this list identical to ADMIN_EMAILS in js/firebase-config.js.
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in ['ali4@gmail.com'];
+    }
+
+    function isStr(v, min, max) { return v is string && v.size() >= min && v.size() <= max; }
+    function optStr(d, k, max) { return !(k in d) || (d[k] is string && d[k].size() <= max); }
+
+    // ---------- bookings ----------
+    match /bookings/{bookingId} {
+      allow create: if request.resource.data.keys().hasOnly([
+            'name','phone','whatsapp','email','date','time','adults','children',
+            'package','request','coupon','status','createdAt'])
+        && request.resource.data.keys().hasAll(['name','phone','package','date','status','createdAt'])
+        && isStr(request.resource.data.name, 1, 120)
+        && isStr(request.resource.data.phone, 3, 40)
+        && isStr(request.resource.data.package, 1, 100)
+        && isStr(request.resource.data.date, 1, 20)
+        && optStr(request.resource.data, 'whatsapp', 40)
+        && optStr(request.resource.data, 'email', 254)
+        && optStr(request.resource.data, 'time', 40)
+        && optStr(request.resource.data, 'request', 1500)
+        && optStr(request.resource.data, 'coupon', 40)
+        && request.resource.data.status == 'Pending'          // guests can't self-confirm
+        && request.resource.data.createdAt == request.time;     // server timestamp only
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ---------- contact messages ----------
+    match /messages/{messageId} {
+      allow create: if request.resource.data.keys().hasOnly(['name','email','phone','subject','message','read','createdAt'])
+        && request.resource.data.keys().hasAll(['name','email','message','read','createdAt'])
+        && isStr(request.resource.data.name, 1, 120)
+        && isStr(request.resource.data.email, 3, 254)
+        && isStr(request.resource.data.message, 1, 3000)
+        && optStr(request.resource.data, 'phone', 40)
+        && optStr(request.resource.data, 'subject', 200)
+        && request.resource.data.read == false
+        && request.resource.data.createdAt == request.time;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ---------- newsletter ----------
+    match /newsletter/{entryId} {
+      allow create: if request.resource.data.keys().hasOnly(['email','createdAt'])
+        && isStr(request.resource.data.email, 5, 254)
+        && request.resource.data.email.matches('.+@.+[.].+')
+        && request.resource.data.createdAt == request.time;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ---------- catalog: packages, prices, pictures (edited in Admin → Huts & Prices) ----------
+    match /catalog/{itemId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().size() <= 14
+        && (itemId == '_settings'
+            ? (request.resource.data.fromPrice is number && request.resource.data.fromPrice >= 0)
+            : (isStr(request.resource.data.name, 1, 100)
+               && (request.resource.data.price == null
+                   || (request.resource.data.price is number && request.resource.data.price >= 0 && request.resource.data.price <= 100000000))
+               && isStr(request.resource.data.img, 1, 900000)));   // image URL or compressed data-URL (<1 MB doc limit)
+      allow delete: if isAdmin();
+    }
+
+    // ---------- user profiles ----------
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      // A user may create/update ONLY their own profile and can never grant themselves a role.
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name','email','phone','role','provider','createdAt','updatedAt'])
+        && request.resource.data.role == 'customer';
+      allow update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name','email','phone','role','provider','createdAt','updatedAt'])
+        && request.resource.data.role == resource.data.role;
+      allow delete: if isAdmin();
+    }
+
+    // ---------- everything else is locked ----------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

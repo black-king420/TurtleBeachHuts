@@ -5,12 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Admin Dashboard — Turtle Beach Huts Karachi</title>
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" href="images/logo.png" style="border-radius: 35px;">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/admin.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/admin-ui.css">
 <!-- App / PWA -->
 <meta name="theme-color" content="#E8722C" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0B211F" media="(prefers-color-scheme: dark)">
@@ -25,75 +26,118 @@
 
 <!-- ============ ACCESS GUARD ============ -->
 <div class="admin-guard-screen" id="adminGuardScreen">
-  <div>
-    <img src="images/logo.png" style="width:56px;height:56px;border-radius:35px;margin-bottom:1rem;" alt="TBHK">
-    <div class="load-bar" style="margin:0 auto;"><span></span></div>
-    <p style="color:rgba(255,255,255,.7);margin-top:1rem;font-family:var(--font-mono);font-size:.8rem;">Checking admin access…</p>
+  <div class="guard-box">
+    <img src="images/logo.png" class="guard-logo" alt="TBHK">
+    <div class="g-bubbles on-dark" role="status" aria-label="Loading"><i></i><i></i><i></i><i></i></div>
+    <p class="guard-note">Checking admin access…</p>
   </div>
 </div>
 
 <!-- ============ ADMIN APP ============ -->
 <div class="admin-shell d-none" id="adminApp">
 
+  <div class="admin-backdrop" id="adminBackdrop"></div>
+
   <aside class="admin-sidebar" id="adminSidebar">
-    <a href="home.html" class="logo-mark"><img src="images/logo.png" style="border-radius:35px;" alt="TBHK"> Turtle Beach Huts</a>
+    <a href="home.html" class="logo-mark"><img src="images/logo.png" alt="TBHK"><span>Turtle Beach Huts<small>Admin console</small></span></a>
 
     <span class="admin-badge-mode" id="modeBadge"><i class="fa-solid fa-flask"></i> Checking…</span>
 
-    <nav class="admin-nav">
-      <button type="button" data-panel="dashboard" class="active"><i class="fa-solid fa-gauge"></i> Dashboard</button>
-      <button type="button" data-panel="bookings"><i class="fa-regular fa-calendar-check"></i> Bookings</button>
-      <button type="button" data-panel="catalog"><i class="fa-solid fa-umbrella-beach"></i> Huts &amp; Prices</button>
-      <button type="button" data-panel="messages"><i class="fa-regular fa-envelope"></i> Messages</button>
-      <button type="button" data-panel="settings"><i class="fa-solid fa-gear"></i> Settings</button>
+    <nav class="admin-nav" aria-label="Admin sections">
+      <button type="button" data-panel="dashboard" class="active"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></button>
+      <button type="button" data-panel="bookings"><i class="fa-regular fa-calendar-check"></i><span>Bookings</span><b class="nav-count" id="navPending" hidden>0</b></button>
+      <button type="button" data-panel="calendar"><i class="fa-regular fa-calendar-days"></i><span>Calendar</span></button>
+      <button type="button" data-panel="catalog"><i class="fa-solid fa-umbrella-beach"></i><span>Huts &amp; Prices</span></button>
+      <button type="button" data-panel="messages"><i class="fa-regular fa-envelope"></i><span>Messages</span><b class="nav-count" id="navUnread" hidden>0</b></button>
+      <button type="button" data-panel="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></button>
     </nav>
 
     <div class="admin-sidebar-foot">
-      <div style="font-weight:800;color:#fff;" id="adminWhoami">—</div>
-      <div style="opacity:.6;" id="adminWhoamiEmail"></div>
-      <button type="button" class="btn-sm-tbhk danger mt-3" id="adminLogout" style="width:100%;justify-content:center;border-color:rgba(255,255,255,.2);color:#fff;">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out
-      </button>
+      <div class="who">
+        <span class="who-avatar" id="whoAvatar">A</span>
+        <div><div class="who-name" id="adminWhoami">—</div><div class="who-mail" id="adminWhoamiEmail"></div></div>
+      </div>
+      <button type="button" class="btn-sm-tbhk danger" id="adminLogout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out</button>
     </div>
   </aside>
 
   <main class="admin-main">
-    <div class="admin-topbar">
-      <div class="d-flex align-items-center gap-2">
-        <button class="navbar-toggler admin-sidebar-toggle" id="sidebarToggle" style="background:var(--ink);color:#fff;border:none;width:42px;height:42px;border-radius:10px;"><i class="fa-solid fa-bars"></i></button>
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <button class="admin-sidebar-toggle" id="sidebarToggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
         <div>
-          <h1 class="mb-0">Admin dashboard</h1>
-          <p style="color:var(--ink-faint);font-size:.85rem;margin:.2rem 0 0;">Bookings, messages, and exports for Turtle Beach Huts Karachi.</p>
+          <h1 id="panelTitle">Dashboard</h1>
+          <p id="panelSub">Your business at a glance.</p>
         </div>
       </div>
-      <div class="d-flex gap-2 flex-wrap">
-        <button class="btn-tbhk btn-outline-tbhk" id="exportAllBtn"><i class="fa-solid fa-file-excel"></i> Export all to Excel</button>
-        <a href="home.html" class="btn-tbhk btn-sunset"><i class="fa-solid fa-arrow-left"></i> Back to site</a>
+      <div class="topbar-actions">
+        <button class="cmd-btn hide-sm" id="cmdBtn" aria-label="Search and commands"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span><kbd>Ctrl K</kbd></button>
+        <button class="icon-btn cmd-icon" id="cmdIcon" aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <button class="icon-btn theme-toggle" aria-label="Toggle theme" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+        <button class="btn-tbhk btn-outline-tbhk hide-sm" id="exportAllBtn"><i class="fa-solid fa-file-excel"></i> <span>Export all</span></button>
+        <a href="home.html" class="btn-tbhk btn-sunset"><i class="fa-solid fa-arrow-up-right-from-square"></i> <span>View site</span></a>
       </div>
-    </div>
+    </header>
 
     <!-- ---------- DASHBOARD ---------- -->
     <section class="admin-view" id="view-dashboard">
-      <div class="stat-grid">
-        <div class="stat-card"><div class="lbl">Total bookings</div><div class="val" id="statTotal">0</div></div>
-        <div class="stat-card"><div class="lbl">Pending</div><div class="val" id="statPending">0</div></div>
-        <div class="stat-card"><div class="lbl">Confirmed</div><div class="val" id="statConfirmed">0</div></div>
-        <div class="stat-card"><div class="lbl">Cancelled</div><div class="val" id="statCancelled">0</div></div>
-        <div class="stat-card"><div class="lbl">Estimated revenue</div><div class="val" id="statRevenue">PKR 0</div></div>
-        <div class="stat-card"><div class="lbl">Messages</div><div class="val" id="statMessages">0</div><div class="delta" id="statUnread">0 unread</div></div>
-      </div>
-
-      <div class="admin-panel-card">
-        <div class="admin-panel-head"><h3>Bookings by package</h3></div>
-        <canvas id="packageChart" height="90"></canvas>
-      </div>
-
-      <div class="admin-panel-card">
-        <div class="admin-panel-head">
-          <h3>Recent bookings</h3>
-          <button class="btn-sm-tbhk" data-jump="bookings"><i class="fa-solid fa-arrow-right"></i> View all</button>
+      <div class="welcome-card">
+        <div class="welcome-orbs" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="welcome-text">
+          <span class="eyebrow-light" id="welcomeDate">Today</span>
+          <h2 id="welcomeHello">Welcome back</h2>
+          <p>Here's what's happening at the beach today. Confirm bookings, update prices and reply to guests — all in one place.</p>
         </div>
-        <p style="font-size:.85rem;color:var(--ink-faint);">Full list, search, status changes and export live in the Bookings tab.</p>
+        <div class="welcome-chips" id="welcomeChips"></div>
+        <div class="welcome-actions">
+          <button class="btn-tbhk btn-white" data-jump="bookings"><i class="fa-regular fa-calendar-check"></i> Review bookings</button>
+          <button class="btn-tbhk btn-ghost-light" data-jump="catalog"><i class="fa-solid fa-tags"></i> Edit prices</button>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card s-lagoon"><span class="stat-ico"><i class="fa-regular fa-calendar-check"></i></span><div><div class="lbl">Total bookings</div><div class="val" id="statTotal">0</div></div></div>
+        <div class="stat-card s-gold"><span class="stat-ico"><i class="fa-solid fa-hourglass-half"></i></span><div><div class="lbl">Pending</div><div class="val" id="statPending">0</div></div></div>
+        <div class="stat-card s-green"><span class="stat-ico"><i class="fa-solid fa-circle-check"></i></span><div><div class="lbl">Confirmed</div><div class="val" id="statConfirmed">0</div></div></div>
+        <div class="stat-card s-red"><span class="stat-ico"><i class="fa-solid fa-ban"></i></span><div><div class="lbl">Cancelled</div><div class="val" id="statCancelled">0</div></div></div>
+        <div class="stat-card s-sunset"><span class="stat-ico"><i class="fa-solid fa-coins"></i></span><div><div class="lbl">Estimated revenue</div><div class="val val-sm" id="statRevenue">PKR 0</div></div></div>
+        <div class="stat-card s-blue"><span class="stat-ico"><i class="fa-regular fa-envelope"></i></span><div><div class="lbl">Messages</div><div class="val" id="statMessages">0</div><div class="delta" id="statUnread">0 unread</div></div></div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="admin-panel-card">
+          <div class="admin-panel-head"><h3><i class="fa-solid fa-chart-column"></i> Bookings by package</h3></div>
+          <div class="chart-box"><canvas id="packageChart"></canvas></div>
+        </div>
+        <div class="admin-panel-card">
+          <div class="admin-panel-head">
+            <h3><i class="fa-regular fa-clock"></i> Recent bookings</h3>
+            <button class="btn-sm-tbhk" data-jump="bookings">View all <i class="fa-solid fa-arrow-right"></i></button>
+          </div>
+          <div class="recent-list" id="recentList"></div>
+        </div>
+      </div>
+
+      <div class="dash-grid dash-grid-2">
+        <div class="admin-panel-card">
+          <div class="admin-panel-head"><h3><i class="fa-solid fa-chart-pie"></i> Booking status</h3></div>
+          <div class="donut-box"><canvas id="statusChart"></canvas></div>
+        </div>
+        <div class="admin-panel-card">
+          <div class="admin-panel-head">
+            <h3><i class="fa-solid fa-plane-arrival"></i> Upcoming arrivals</h3>
+            <span class="soft-chip" id="upcomingCount">0 coming</span>
+          </div>
+          <div class="upcoming-list" id="upcomingList"></div>
+        </div>
+      </div>
+
+      <div class="admin-panel-card trend-card">
+        <div class="admin-panel-head">
+          <h3><i class="fa-solid fa-chart-line"></i> Booking activity — last 14 days</h3>
+          <span class="soft-chip" id="trendTotal">0 new</span>
+        </div>
+        <div class="trend-box"><canvas id="trendChart"></canvas></div>
       </div>
     </section>
 
@@ -101,17 +145,23 @@
     <section class="admin-view d-none" id="view-bookings">
       <div class="admin-panel-card">
         <div class="admin-panel-head">
-          <h3>All bookings</h3>
+          <h3><i class="fa-regular fa-calendar-check"></i> All bookings</h3>
           <div class="admin-filters">
-            <input type="text" id="bookingSearch" placeholder="Search name, phone, email, package…">
+            <div class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="bookingSearch" placeholder="Search name, phone, email, package…"></div>
             <select id="bookingStatusFilter">
               <option value="all">All statuses</option>
               <option value="Pending">Pending</option>
               <option value="Confirmed">Confirmed</option>
               <option value="Cancelled">Cancelled</option>
             </select>
-            <button class="btn-sm-tbhk" id="exportBookingsBtn"><i class="fa-solid fa-file-excel"></i> Export to Excel</button>
+            <button class="btn-sm-tbhk" id="exportBookingsBtn"><i class="fa-solid fa-file-excel"></i> Export</button>
           </div>
+        </div>
+        <div class="status-tabs" id="statusTabs" role="tablist">
+          <button type="button" class="active" data-status="all">All <b data-count="all">0</b></button>
+          <button type="button" data-status="Pending"><i class="dot gold"></i>Pending <b data-count="Pending">0</b></button>
+          <button type="button" data-status="Confirmed"><i class="dot green"></i>Confirmed <b data-count="Confirmed">0</b></button>
+          <button type="button" data-status="Cancelled"><i class="dot red"></i>Cancelled <b data-count="Cancelled">0</b></button>
         </div>
         <div class="table-wrap">
           <table class="admin-table">
@@ -129,16 +179,39 @@
       </div>
     </section>
 
+    <!-- ---------- CALENDAR ---------- -->
+    <section class="admin-view d-none" id="view-calendar">
+      <div class="cal-layout">
+        <div class="admin-panel-card">
+          <div class="admin-panel-head">
+            <h3><i class="fa-regular fa-calendar-days"></i> <span id="calTitle">Month</span></h3>
+            <div class="admin-filters cal-nav">
+              <button class="btn-sm-tbhk" id="calPrev" aria-label="Previous month"><i class="fa-solid fa-chevron-left"></i></button>
+              <button class="btn-sm-tbhk" id="calToday">Today</button>
+              <button class="btn-sm-tbhk" id="calNext" aria-label="Next month"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+          </div>
+          <div class="cal-legend"><span><i class="dot gold"></i>Pending</span><span><i class="dot green"></i>Confirmed</span><span><i class="dot red"></i>Cancelled</span></div>
+          <div class="cal-dow"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+        <div class="admin-panel-card">
+          <div class="admin-panel-head"><h3><i class="fa-regular fa-clock"></i> <span id="calDayTitle">Select a day</span></h3></div>
+          <div class="recent-list" id="calDayList"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- ---------- HUTS & PRICES ---------- -->
     <section class="admin-view d-none" id="view-catalog">
       <div class="admin-panel-card">
         <div class="admin-panel-head">
-          <div><h3>Huts &amp; Prices</h3>
+          <div><h3><i class="fa-solid fa-umbrella-beach"></i> Huts &amp; Prices</h3>
             <p class="cat-mode" id="catMode">Loading…</p></div>
-          <div class="admin-filters">
+          <div class="admin-filters cat-toolbar">
             <button class="btn-sm-tbhk" id="catAdd"><i class="fa-solid fa-plus"></i> Add package</button>
             <button class="btn-sm-tbhk danger" id="catReset"><i class="fa-solid fa-rotate-left"></i> Reset</button>
-            <button class="btn-tbhk btn-sunset" id="catSave" disabled style="padding:.55rem 1.2rem;"><i class="fa-solid fa-floppy-disk"></i> Save all changes</button>
+            <button class="btn-tbhk btn-sunset" id="catSave" disabled><i class="fa-solid fa-floppy-disk"></i> Save all changes</button>
           </div>
         </div>
         <div class="cat-top">
@@ -154,8 +227,8 @@
     <section class="admin-view d-none" id="view-messages">
       <div class="admin-panel-card">
         <div class="admin-panel-head">
-          <h3>Contact messages</h3>
-          <button class="btn-sm-tbhk" id="exportMessagesBtn"><i class="fa-solid fa-file-excel"></i> Export to Excel</button>
+          <h3><i class="fa-regular fa-envelope"></i> Contact messages</h3>
+          <button class="btn-sm-tbhk" id="exportMessagesBtn"><i class="fa-solid fa-file-excel"></i> Export</button>
         </div>
         <div class="table-wrap">
           <table class="admin-table">
@@ -170,25 +243,19 @@
 
     <!-- ---------- SETTINGS ---------- -->
     <section class="admin-view d-none" id="view-settings">
-      <div class="admin-panel-card">
-        <h3 class="mb-3">Connection</h3>
-        <p style="font-size:.88rem;color:var(--ink-soft);max-width:640px;">
-          This dashboard reads and writes the same data source as the public site: Firestore
-          collections <code>bookings</code>, <code>messages</code> and <code>newsletter</code> when
-          Firebase is configured, or <code>localStorage</code> on this device otherwise.
-        </p>
-        <h3 class="mt-4 mb-3">Admin access</h3>
-        <p style="font-size:.88rem;color:var(--ink-soft);max-width:640px;">
-          Add or remove the email addresses allowed into this dashboard in
-          <code>ADMIN_EMAILS</code> inside <code>js/firebase-config.js</code>, then mirror the same
-          list into your Firestore security rules (see the comment block at the bottom of that file).
-        </p>
-        <h3 class="mt-4 mb-3">Exports</h3>
-        <p style="font-size:.88rem;color:var(--ink-soft);max-width:640px;">
-          "Export to Excel" on the Bookings and Messages tabs generates a real <code>.xlsx</code> file
-          client-side (via SheetJS) from exactly what's on screen, including any active search/filter.
-          "Export all to Excel" bundles both tables into one workbook with two sheets.
-        </p>
+      <div class="settings-grid">
+        <div class="admin-panel-card"><span class="stat-ico s-lagoon"><i class="fa-solid fa-database"></i></span>
+          <h3>Connection</h3>
+          <p>This dashboard reads and writes the same data as the public site: Firestore collections <code>bookings</code>, <code>messages</code>, <code>newsletter</code> and <code>catalog</code> when Firebase is configured, or <code>localStorage</code> on this device otherwise.</p></div>
+        <div class="admin-panel-card"><span class="stat-ico s-sunset"><i class="fa-solid fa-user-shield"></i></span>
+          <h3>Admin access</h3>
+          <p>Add or remove the emails allowed into this dashboard in <code>ADMIN_EMAILS</code> inside <code>js/firebase-config.js</code>, then mirror the same list in your Firestore security rules.</p></div>
+        <div class="admin-panel-card"><span class="stat-ico s-green"><i class="fa-solid fa-file-excel"></i></span>
+          <h3>Exports</h3>
+          <p>“Export” on Bookings and Messages creates a real <code>.xlsx</code> file in your browser from exactly what's on screen, including any active search or filter. “Export all” bundles both into one workbook.</p></div>
+        <div class="admin-panel-card"><span class="stat-ico s-blue"><i class="fa-solid fa-mobile-screen"></i></span>
+          <h3>Install as an app</h3>
+          <p>This console works as an installable app on phones and desktops. Open the site in Chrome or Edge and choose <b>Install</b>, or <b>Add to Home Screen</b> on iPhone.</p></div>
       </div>
     </section>
   </main>
@@ -202,11 +269,8 @@
 <script src="js/admin.js"></script>
 <script src="js/catalog.js"></script>
 <script src="js/admin-catalog.js"></script>
-<script>
-  document.querySelectorAll('[data-jump]').forEach(btn => {
-    btn.addEventListener('click', () => document.querySelector(`.admin-nav button[data-panel="${btn.dataset.jump}"]`).click());
-  });
-</script>
+<script src="js/admin-ui.js"></script>
+<script src="js/admin-extra.js"></script>
 <script src="js/app.js" defer></script>
 </body>
 </html>

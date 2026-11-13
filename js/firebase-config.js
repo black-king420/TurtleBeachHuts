@@ -25,6 +25,7 @@
 const firebaseConfig = {
   apiKey: "AIzaSyC97NPMhvxvv-r72mMb3UhUK8z_V0sifos",
   authDomain: "login-and-signup-75bec.firebaseapp.com",
+  databaseURL: "https://login-and-signup-75bec-default-rtdb.firebaseio.com",
   projectId: "login-and-signup-75bec",
   storageBucket: "login-and-signup-75bec.firebasestorage.app",
   messagingSenderId: "95417279013",
@@ -36,7 +37,6 @@ const firebaseConfig = {
 // `users/{uid}.role == "admin"` check — see README "Admin access".)
 export const ADMIN_EMAILS = [
   "ali4@gmail.com"
-  // pasword Hello123@ 
 ];
 
 window.__tbhkFirebaseReady = false;
@@ -44,6 +44,7 @@ window.tbhkFirebase = null;
 
 async function boot() {
   const isConfigured = firebaseConfig.apiKey && firebaseConfig.apiKey !== "REPLACE_ME";
+  window.__tbhkConfigured = !!isConfigured; // admin uses this: never open the dashboard when keys exist but Firebase failed to load
   if (!isConfigured) {
     console.info("[TBHK] Firebase not configured yet — running in demo mode (localStorage). See js/firebase-config.js.");
     window.__tbhkFirebaseReady = true;
@@ -95,51 +96,10 @@ async function boot() {
 
 boot();
 
-//  ==========================================================================
-//    FIRESTORE SECURITY RULES — paste into Firebase console → Firestore → Rules
-//    ==========================================================================
-
-// rules_version = '2';
-// service cloud.firestore {
-//   match /databases/{database}/documents {
-
-//     function isSignedIn() { return request.auth != null; }
-//     function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
-//     function isAdmin() {
-//       return isSignedIn() &&
-//         request.auth.token.email in [
-//           "admin@turtlebeachhutskarachi.com"
-//         ];
-//     }
-
-//     match /users/{uid} {
-//       allow read: if isOwner(uid) || isAdmin();
-//       allow create: if isOwner(uid);
-//       allow update: if isOwner(uid) || isAdmin();
-//       allow delete: if isAdmin();
-//     }
-
-//     match /bookings/{bookingId} {
-//       allow create: if true; // public booking form, incl. guests
-//       allow read, update, delete: if isAdmin();
-//     }
-
-//     match /messages/{messageId} {
-//       allow create: if true; // public contact form
-//       allow read, update, delete: if isAdmin();
-//     }
-
-//     match /newsletter/{entryId} {
-//       allow create: if true;
-//       allow read, update, delete: if isAdmin();
-//     }
-
-//     // Huts & Prices catalog: everyone can read, only admins can edit
-//     match /catalog/{itemId} {
-//       allow read: if true;
-//       allow create, update, delete: if isAdmin();
-//     }
-//   }
-// }
-
-  //  ========================================================================== 
+// ==========================================================================
+//   SECURITY RULES now live in /firebase (not in this public file):
+//     firebase/firestore.rules       – Cloud Firestore (what this site uses)
+//     firebase/database.rules.json   – Realtime Database (secure-by-default)
+//   Deploy:  firebase deploy --only firestore:rules,database
+//   Keep ADMIN_EMAILS above identical to the email list inside both rules files.
+// ==========================================================================

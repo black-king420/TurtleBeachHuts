@@ -17,6 +17,9 @@
     return it ? Number(it.price) || 0 : PACKAGE_PRICE[name] || 0;
   }
 
+  const esc = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  window.TBHKAdmin = { bookings: () => bookings, messages: () => messages, esc: (v) => esc(v) };
   let bookings = [];
   let messages = [];
   let chart = null;
@@ -39,8 +42,20 @@
       : '<i class="fa-solid fa-flask"></i> Demo mode · local data';
 
     if (!live) {
-      // Zero-setup preview: let anyone in, clearly labelled as demo.
-      revealDashboard({ name: "Demo Admin", email: "ali4@gmail.com" });
+      if (window.__tbhkConfigured) {
+        // Keys exist but Firebase could not load (offline / blocked): fail CLOSED, never open the dashboard.
+        $("#adminGuardScreen").innerHTML = `
+          <div class="guard-box">
+            <i class="fa-solid fa-plug-circle-exclamation guard-icon"></i>
+            <h2>Can't reach the server</h2>
+            <p>The admin sign-in service didn't load, so the dashboard stays locked. Check your internet connection and try again.</p>
+            <button class="btn-tbhk btn-sunset" onclick="location.reload()"><i class="fa-solid fa-rotate"></i> Retry</button>
+            <a href="home.html" class="btn-tbhk btn-ghost-light">Back to site</a>
+          </div>`;
+        return;
+      }
+      // Zero-setup preview (no Firebase keys at all): clearly labelled demo.
+      revealDashboard({ name: "Demo Admin", email: "demo@local" });
       return;
     }
 
@@ -61,11 +76,11 @@
 
   function showDenied(email) {
     $("#adminGuardScreen").innerHTML = `
-      <div>
-        <i class="fa-solid fa-lock" style="font-size:2.4rem;color:var(--gold);"></i>
-        <h2 class="mt-3" style="color:#fff;">Access restricted</h2>
-        <p style="color:rgba(255,255,255,.75);max-width:420px;margin:.6rem auto 0;">
-          ${email} isn't on the admin allow-list. Add it to <code>ADMIN_EMAILS</code> in
+      <div class="guard-box">
+        <i class="fa-solid fa-lock guard-icon"></i>
+        <h2>Access restricted</h2>
+        <p>
+          ${esc(email)} isn't on the admin allow-list. Add it to <code>ADMIN_EMAILS</code> in
           <code>js/firebase-config.js</code> to grant dashboard access.
         </p>
         <a href="home.html" class="btn-tbhk btn-sunset mt-4">Back to site</a>
@@ -84,14 +99,14 @@
 
   /* ---------------- Data wiring ---------------- */
   function wireData() {
-    window.TBHKStore.subscribeBookings((rows) => { bookings = rows; renderBookings(); renderStats(); renderChart(); });
-    window.TBHKStore.subscribeMessages((rows) => { messages = rows; renderMessages(); renderStats(); });
+    window.TBHKStore.subscribeBookings((rows) => { bookings = rows; renderBookings(); renderStats(); renderChart(); document.dispatchEvent(new CustomEvent("tbhk-admin-data")); });
+    window.TBHKStore.subscribeMessages((rows) => { messages = rows; renderMessages(); renderStats(); document.dispatchEvent(new CustomEvent("tbhk-admin-data")); });
   }
 
   function fmtDate(iso) {
     if (!iso) return "—";
     const d = new Date(iso);
-    if (isNaN(d)) return iso;
+    if (isNaN(d)) return esc(iso);
     return d.toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" });
   }
 
@@ -113,6 +128,68 @@
     $("#statRevenue").textContent = "PKR " + revenue.toLocaleString();
     $("#statMessages").textContent = messages.length;
     $("#statUnread").textContent = unread + " unread";
+    renderRecent();
+    renderUpcoming();
+    renderTabCounts();
+    renderChips(pending, unread);
+  }
+
+  function renderTabCounts() {
+    const c = { all: bookings.length, Pending: 0, Confirmed: 0, Cancelled: 0 };
+    bookings.forEach((b) => { const s = b.status || "Pending"; if (c[s] !== undefined) c[s]++; });
+    Object.keys(c).forEach((k) => { const el = $(`[data-count="${k}"]`); if (el) el.textContent = c[k]; });
+  }
+
+  function todayISO() { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+
+  function renderChips(pending, unread) {
+    const box = $("#welcomeChips"); if (!box) return;
+    const t = todayISO();
+    const today = bookings.filter((b) => b.date === t && b.status !== "Cancelled").length;
+    const chip = (ico, txt, panel) => `<button type="button" class="w-chip" data-jump="${panel}"><i class="${ico}"></i>${txt}</button>`;
+    box.innerHTML =
+      chip("fa-solid fa-plane-arrival", `${today} arrival${today === 1 ? "" : "s"} today`, "bookings") +
+      chip("fa-solid fa-hourglass-half", `${pending} pending`, "bookings") +
+      chip("fa-regular fa-envelope", `${unread} unread`, "messages");
+    box.querySelectorAll("[data-jump]").forEach((b) => b.addEventListener("click", () => $(`.admin-nav button[data-panel="${b.dataset.jump}"]`).click()));
+  }
+
+  function renderUpcoming() {
+    const box = $("#upcomingList"); if (!box) return;
+    const t = todayISO();
+    const rows = bookings.filter((b) => b.date && b.date >= t && b.status !== "Cancelled").sort((x, y) => (x.date > y.date ? 1 : -1)).slice(0, 5);
+    $("#upcomingCount").textContent = rows.length + " coming";
+    if (!rows.length) { box.innerHTML = `<div class="empty-state"><i class="fa-solid fa-umbrella-beach"></i>No upcoming arrivals yet.</div>`; return; }
+    const mon = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    box.innerHTML = rows.map((b) => {
+      const d = new Date(b.date + "T00:00:00");
+      const day = isNaN(d) ? "—" : d.getDate(), m = isNaN(d) ? "" : mon[d.getMonth()];
+      const guests = (Number(b.adults) || 0) + (Number(b.children) || 0);
+      return `<div class="up-item row-click" data-open="${esc(b.id)}"><div class="up-date"><b>${esc(day)}</b><span>${esc(m)}</span></div>
+        <div class="recent-main"><strong>${esc(b.name || "Guest")}</strong><span>${esc(b.package || "—")}${b.time ? " · " + esc(b.time) : ""}</span></div>
+        <span class="guest-badge"><i class="fa-solid fa-user-group"></i> ${guests}</span></div>`;
+    }).join("");
+  }
+
+  function renderRecent() {
+    const box = $("#recentList");
+    if (!box) return;
+    const rows = bookings.slice(0, 5);
+    if (!rows.length) {
+      box.innerHTML = `<div class="empty-state"><i class="fa-regular fa-calendar"></i>No bookings yet — they'll appear here the moment a guest books.</div>`;
+      return;
+    }
+    box.innerHTML = rows.map((b) => {
+      const st = String(b.status || "Pending");
+      const cls = ["pending", "confirmed", "cancelled"].includes(st.toLowerCase()) ? st.toLowerCase() : "pending";
+      const initial = esc((b.name || "?").trim().charAt(0).toUpperCase() || "?");
+      return `<div class="recent-item row-click" data-open="${esc(b.id)}">
+        <span class="recent-avatar">${initial}</span>
+        <div class="recent-main"><strong>${esc(b.name || "Guest")}</strong>
+          <span>${esc(b.package || "—")} · ${esc(b.date || "no date")}${b.time ? " · " + esc(b.time) : ""}</span></div>
+        <span class="status-pill ${cls}">${esc(st)}</span>
+      </div>`;
+    }).join("");
   }
 
   /* ---------------- Bookings table ---------------- */
@@ -135,22 +212,22 @@
     }
     tbody.innerHTML = rows
       .map((b) => {
-        const status = b.status || "Pending";
-        const cls = status.toLowerCase();
-        return `<tr>
-          <td><strong>${b.name || "—"}</strong><div style="font-size:.72rem;color:var(--ink-faint);">${b.id}</div></td>
-          <td>${b.phone || "—"}${b.whatsapp ? `<div style="font-size:.72rem;color:var(--ink-faint);">WA: ${b.whatsapp}</div>` : ""}</td>
-          <td>${b.email || "—"}</td>
-          <td>${b.package || "—"}</td>
-          <td>${b.date || "—"}${b.time ? " · " + b.time : ""}</td>
-          <td>${b.adults || 0} adults, ${b.children || 0} kids</td>
-          <td><span class="status-pill ${cls}">${status}</span></td>
-          <td>${fmtDate(b.createdAt)}</td>
-          <td>
+        const status = String(b.status || "Pending");
+        const cls = ["pending", "confirmed", "cancelled"].includes(status.toLowerCase()) ? status.toLowerCase() : "pending";
+        return `<tr class="row-click" data-open="${esc(b.id)}">
+          <td data-label="Guest"><div class="guest-cell"><span class="recent-avatar sm">${esc((b.name || "?").trim().charAt(0).toUpperCase() || "?")}</span><div><strong>${esc(b.name || "—")}</strong><div class="sub-id">${esc(b.id)}</div></div></div></td>
+          <td data-label="Contact">${esc(b.phone || "—")}${b.whatsapp ? `<div style="font-size:.72rem;color:var(--ink-faint);">WA: ${esc(b.whatsapp)}</div>` : ""}</td>
+          <td data-label="Email">${esc(b.email || "—")}</td>
+          <td data-label="Package"><span class="pkg-chip">${esc(b.package || "—")}</span></td>
+          <td data-label="Date">${esc(b.date || "—")}${b.time ? " · " + esc(b.time) : ""}</td>
+          <td data-label="Party">${esc(b.adults || 0)} adults, ${esc(b.children || 0)} kids</td>
+          <td data-label="Status"><span class="status-pill ${cls}">${esc(status)}</span></td>
+          <td data-label="Submitted">${fmtDate(b.createdAt)}</td>
+          <td data-label="Actions">
             <div class="row-actions">
-              <button title="Confirm" data-action="confirm" data-id="${b.id}"><i class="fa-solid fa-check"></i></button>
-              <button title="Cancel" data-action="cancel" data-id="${b.id}"><i class="fa-solid fa-ban"></i></button>
-              <button title="Delete" class="del" data-action="delete" data-id="${b.id}"><i class="fa-solid fa-trash"></i></button>
+              <button title="Confirm" data-action="confirm" data-id="${esc(b.id)}"><i class="fa-solid fa-check"></i></button>
+              <button title="Cancel" data-action="cancel" data-id="${esc(b.id)}"><i class="fa-solid fa-ban"></i></button>
+              <button title="Delete" class="del" data-action="delete" data-id="${esc(b.id)}"><i class="fa-solid fa-trash"></i></button>
             </div>
           </td>
         </tr>`;
@@ -183,15 +260,15 @@
     tbody.innerHTML = messages
       .map(
         (m) => `<tr>
-          <td><strong>${m.name || "—"}</strong>${!m.read ? ' <span class="status-pill pending">New</span>' : ""}</td>
-          <td>${m.email || "—"}</td>
-          <td>${m.phone || "—"}</td>
-          <td>${m.subject || "—"}</td>
-          <td style="max-width:280px;white-space:normal;">${(m.message || "").slice(0, 140)}${(m.message || "").length > 140 ? "…" : ""}</td>
-          <td>
+          <td data-label="Name"><div class="guest-cell"><span class="recent-avatar sm${!m.read ? " unread" : ""}">${esc((m.name || "?").trim().charAt(0).toUpperCase() || "?")}</span><div><strong>${esc(m.name || "—")}</strong>${!m.read ? ' <span class="status-pill pending">New</span>' : ""}</div></div></td>
+          <td data-label="Email">${esc(m.email || "—")}</td>
+          <td data-label="Phone">${esc(m.phone || "—")}</td>
+          <td data-label="Subject">${esc(m.subject || "—")}</td>
+          <td data-label="Message" style="max-width:280px;white-space:normal;">${esc((m.message || "").slice(0, 140))}${(m.message || "").length > 140 ? "…" : ""}</td>
+          <td data-label="Actions">
             <div class="row-actions">
-              <button title="Mark read" data-action="read" data-id="${m.id}"><i class="fa-solid fa-envelope-open"></i></button>
-              <button title="Delete" class="del" data-action="delmsg" data-id="${m.id}"><i class="fa-solid fa-trash"></i></button>
+              <button title="Mark read" data-action="read" data-id="${esc(m.id)}"><i class="fa-solid fa-envelope-open"></i></button>
+              <button title="Delete" class="del" data-action="delmsg" data-id="${esc(m.id)}"><i class="fa-solid fa-trash"></i></button>
             </div>
           </td>
         </tr>`
@@ -208,7 +285,33 @@
   }
 
   /* ---------------- Chart ---------------- */
+  let donut = null;
+  function renderDonut() {
+    const canvas = $("#statusChart");
+    if (!canvas || !window.Chart) return;
+    const vals = ["Pending", "Confirmed", "Cancelled"].map((k) => bookings.filter((b) => (b.status || "Pending") === k).length);
+    if (donut) { donut.data.datasets[0].data = vals; donut.update(); return; }
+    const centre = {
+      id: "centreText",
+      afterDraw(c) {
+        const { ctx, chartArea: ca } = c; const total = c.data.datasets[0].data.reduce((x, y) => x + y, 0);
+        const cx = (ca.left + ca.right) / 2, cy = (ca.top + ca.bottom) / 2;
+        const css = getComputedStyle(document.documentElement);
+        ctx.save(); ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillStyle = css.getPropertyValue("--ink").trim() || "#10302F"; ctx.font = "700 30px Fraunces, Georgia, serif"; ctx.fillText(total, cx, cy - 8);
+        ctx.fillStyle = css.getPropertyValue("--ink-faint").trim() || "#6b7f7e"; ctx.font = "500 11px 'IBM Plex Mono', monospace"; ctx.fillText("BOOKINGS", cx, cy + 16); ctx.restore();
+      },
+    };
+    donut = new window.Chart(canvas, {
+      type: "doughnut",
+      data: { labels: ["Pending", "Confirmed", "Cancelled"], datasets: [{ data: vals, backgroundColor: ["#F6C445", "#2E9E6C", "#D33B3B"], borderWidth: 0, hoverOffset: 8, spacing: 3, borderRadius: 8 }] },
+      options: { responsive: true, maintainAspectRatio: false, cutout: "72%", plugins: { legend: { position: "bottom", labels: { usePointStyle: true, pointStyle: "circle", padding: 16, font: { family: "Manrope", weight: "600" } } } } },
+      plugins: [centre],
+    });
+  }
+
   function renderChart() {
+    renderDonut();
     const canvas = $("#packageChart");
     if (!canvas || !window.Chart) return;
     const counts = {};
@@ -218,10 +321,14 @@
     if (chart) { chart.data.labels = labels; chart.data.datasets[0].data = data; chart.update(); return; }
     chart = new window.Chart(canvas, {
       type: "bar",
-      data: { labels, datasets: [{ label: "Bookings", data, backgroundColor: "#E8722C", borderRadius: 8, maxBarThickness: 34 }] },
+      data: { labels, datasets: [{ label: "Bookings", data, backgroundColor: (ctx) => {
+          const { chart: c } = ctx; if (!c.chartArea) return "#E8722C";
+          const g = c.ctx.createLinearGradient(0, c.chartArea.bottom, 0, c.chartArea.top);
+          g.addColorStop(0, "#C1440E"); g.addColorStop(1, "#F6C445"); return g; }, borderRadius: 10, maxBarThickness: 38 }] },
       options: {
+        responsive: true, maintainAspectRatio: false,
         plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "rgba(16,48,47,.07)" } }, x: { grid: { display: false } } },
       },
     });
   }
@@ -278,7 +385,10 @@
         $("#adminSidebar").classList.remove("open");
       });
     });
-    $("#sidebarToggle")?.addEventListener("click", () => $("#adminSidebar").classList.toggle("open"));
+    $$("#statusTabs button").forEach((tab) => tab.addEventListener("click", () => {
+      $$("#statusTabs button").forEach((t) => t.classList.toggle("active", t === tab));
+      $("#bookingStatusFilter").value = tab.dataset.status; renderBookings();
+    }));
     $("#bookingSearch")?.addEventListener("input", renderBookings);
     $("#bookingStatusFilter")?.addEventListener("change", renderBookings);
     $("#exportBookingsBtn")?.addEventListener("click", exportBookings);

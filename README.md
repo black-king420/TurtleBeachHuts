@@ -100,3 +100,32 @@ match /catalog/{itemId} {
   allow create, update, delete: if isAdmin();
 }
 ```
+
+
+## Firebase: config + security rules (project `login-and-signup-75bec`)
+
+Files added at the project root / `firebase/`:
+
+| File | Purpose |
+|---|---|
+| `js/firebase-config.js` | Web app config, now including `databaseURL` |
+| `firebase/firestore.rules` | Rules for Cloud Firestore — **this is what the site actually uses** |
+| `firebase/database.rules.json` | Rules for the Realtime Database at `…-default-rtdb.firebaseio.com` (locked down; the site doesn't read it yet) |
+| `firebase/firestore.indexes.json` | Empty index file required by the CLI |
+| `firebase.json`, `.firebaserc` | CLI config: deploys rules + hosting to project `login-and-signup-75bec` |
+
+Deploy:
+
+```bash
+npm i -g firebase-tools
+firebase login
+firebase deploy --only firestore:rules,database      # rules only
+firebase deploy                                      # rules + website hosting
+```
+
+Or paste each rules file into Console → Firestore → Rules / Realtime Database → Rules.
+
+**Admin access:** the rules treat a user as admin only if their email is in the list inside the rules file
+(currently `ali4@gmail.com`) **and the email is verified**. Sign in to the admin with Google using that email,
+or verify the email, otherwise the dashboard will show "permission denied". If you add admins, update
+`ADMIN_EMAILS` in `js/firebase-config.js` and the list in both rules files.
