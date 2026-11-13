@@ -133,15 +133,12 @@ boot();
 //       allow create: if true;
 //       allow read, update, delete: if isAdmin();
 //     }
-<<<<<<< HEAD
 
 //     // Huts & Prices catalog: everyone can read, only admins can edit
 //     match /catalog/{itemId} {
 //       allow read: if true;
 //       allow create, update, delete: if isAdmin();
 //     }
-=======
->>>>>>> ba316d946e45150633c566b0a636963ef6c6d9fa
 //   }
 // }
 

@@ -11,15 +11,12 @@
     "Weekend Package": 55000, "Holiday Package": 65000, "Custom Package": 0,
   };
 
-<<<<<<< HEAD
   function priceFor(name) {
     const c = window.TBHKCatalog && window.TBHKCatalog.current();
     const it = c && c.items.find((i) => i.name === name);
     return it ? Number(it.price) || 0 : PACKAGE_PRICE[name] || 0;
   }
 
-=======
->>>>>>> ba316d946e45150633c566b0a636963ef6c6d9fa
   let bookings = [];
   let messages = [];
   let chart = null;
@@ -106,11 +103,7 @@
     const cancelled = bookings.filter((b) => b.status === "Cancelled").length;
     const revenue = bookings
       .filter((b) => b.status !== "Cancelled")
-<<<<<<< HEAD
       .reduce((sum, b) => sum + priceFor(b.package), 0);
-=======
-      .reduce((sum, b) => sum + (PACKAGE_PRICE[b.package] || 0), 0);
->>>>>>> ba316d946e45150633c566b0a636963ef6c6d9fa
     const unread = messages.filter((m) => !m.read).length;
 
     $("#statTotal").textContent = total;

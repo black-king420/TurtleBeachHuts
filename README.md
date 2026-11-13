@@ -83,7 +83,6 @@ Image references use descriptive placeholder filenames (e.g. `images/gallery-sun
 Bootstrap 5, vanilla ES6, Firebase v10 (modular client SDK, loaded from `gstatic.com` — no build step needed), Swiper, AOS, FullCalendar, Chart.js, SheetJS (xlsx), Font Awesome, Google Fonts (Fraunces + Manrope + IBM Plex Mono).
 # TurtleBeachHutsKarachi
 # TurtleBeachHutsKarachi
-<<<<<<< HEAD
 
 
 ## Huts & Prices (admin-editable catalog)
@@ -101,5 +100,3 @@ match /catalog/{itemId} {
   allow create, update, delete: if isAdmin();
 }
 ```
-=======
->>>>>>> ba316d946e45150633c566b0a636963ef6c6d9fa
