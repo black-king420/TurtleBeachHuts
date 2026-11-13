@@ -93,6 +93,7 @@ table.admin-table tr:hover td{background:rgba(232,114,44,.04);}
   .admin-main{padding:1.2rem 1rem 4rem;}
   .admin-sidebar-toggle{display:inline-flex;}
 }
+<<<<<<< HEAD
 
 /* ---------- Huts & Prices manager ---------- */
 .cat-mode{font-size:.82rem;color:var(--ink-faint);margin:.3rem 0 0;display:flex;gap:.45rem;align-items:center;}
@@ -125,3 +126,5 @@ table.admin-table tr:hover td{background:rgba(232,114,44,.04);}
 .cat-actions .btn-sm-tbhk:disabled{opacity:.35;cursor:not-allowed;}
 #catSave.pulse{animation:catPulse 1.6s infinite;}
 @keyframes catPulse{0%,100%{box-shadow:0 0 0 0 rgba(232,114,44,.5);}50%{box-shadow:0 0 0 10px rgba(232,114,44,0);}}
+=======
+>>>>>>> ba316d946e45150633c566b0a636963ef6c6d9fa
