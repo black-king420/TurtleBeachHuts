@@ -3,48 +3,69 @@ rules_version = '2';
 // Turtle Beach Huts Karachi — Cloud Firestore security rules
 // Deploy:  firebase deploy --only firestore:rules      (or paste into Console → Firestore → Rules)
 //
-// Model: the public can CREATE bookings / messages / newsletter sign-ups (with strict validation)
-// but can never read, edit or delete them. Only admins can. Catalog (packages & prices) is public
-// to read and admin-only to write. Everything not listed is denied.
+// WHO CAN DO WHAT
+//   Visitors / guests : read the public website content (catalog, huts, gallery). Send contact
+//                       messages and newsletter sign-ups. They can NOT book.
+//   Members (signed in with email / Google / Facebook, NOT anonymous guests):
+//                       create bookings for themselves and read ONLY their own bookings.
+//   Admins            : read & manage everything; edit catalog, huts and gallery.
+// Everything not listed is denied.
 service cloud.firestore {
   match /databases/{database}/documents {
 
     // ---------- helpers ----------
     function signedIn() { return request.auth != null; }
 
-    // Admin = one of these emails AND the email is verified (stops someone registering an
-    // admin's address with a password and gaining access). Sign in with Google, or verify the
-    // email, for the admin account. Keep this list identical to ADMIN_EMAILS in js/firebase-config.js.
+    // A "guest" = anonymous Firebase user. Members are everyone else.
+    function isMember() { return signedIn() && request.auth.token.firebase.sign_in_provider != 'anonymous'; }
+
+    // Admin if EITHER:
+    //  (a) verified email on the allow-list below (keep identical to ADMIN_EMAILS in js/firebase-config.js), OR
+    //  (b) the user's UID has a document in /admins/{uid} (created by hand in the console — works even
+    //      without email verification and cannot be forged by clients, see the /admins rule).
     function isAdmin() {
-      return signedIn()
-        && request.auth.token.email_verified == true
-        && request.auth.token.email in ['ali4@gmail.com'];
+      return signedIn() && (
+        (request.auth.token.email_verified == true && request.auth.token.email in ['ali4@gmail.com'])
+        || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
     }
 
     function isStr(v, min, max) { return v is string && v.size() >= min && v.size() <= max; }
     function optStr(d, k, max) { return !(k in d) || (d[k] is string && d[k].size() <= max); }
 
-    // ---------- bookings ----------
+    // ---------- admins registry (read-only for the user themself; written only from the console) ----------
+    match /admins/{adminUid} {
+      allow read: if signedIn() && request.auth.uid == adminUid;
+      allow write: if false;
+    }
+
+    // ---------- bookings: members only ----------
     match /bookings/{bookingId} {
-      allow create: if request.resource.data.keys().hasOnly([
+      allow create: if isMember()
+        && request.resource.data.keys().hasOnly([
             'name','phone','whatsapp','email','date','time','adults','children',
-            'package','request','coupon','status','createdAt'])
-        && request.resource.data.keys().hasAll(['name','phone','package','date','status','createdAt'])
+            'package','request','coupon','status','createdAt','uid','userEmail','userName'])
+        && request.resource.data.keys().hasAll(['name','phone','package','status','createdAt','uid'])
+        && request.resource.data.uid == request.auth.uid                 // booking belongs to the signed-in member
         && isStr(request.resource.data.name, 1, 120)
         && isStr(request.resource.data.phone, 3, 40)
         && isStr(request.resource.data.package, 1, 100)
-        && isStr(request.resource.data.date, 1, 20)
+        && optStr(request.resource.data, 'date', 20)
         && optStr(request.resource.data, 'whatsapp', 40)
         && optStr(request.resource.data, 'email', 254)
         && optStr(request.resource.data, 'time', 40)
         && optStr(request.resource.data, 'request', 1500)
         && optStr(request.resource.data, 'coupon', 40)
-        && request.resource.data.status == 'Pending'          // guests can't self-confirm
-        && request.resource.data.createdAt == request.time;     // server timestamp only
-      allow read, update, delete: if isAdmin();
+        && optStr(request.resource.data, 'userEmail', 254)
+        && optStr(request.resource.data, 'userName', 120)
+        && request.resource.data.status == 'Pending'                   // can't self-confirm
+        && request.resource.data.createdAt == request.time;              // server timestamp only
+      // members see only their own bookings; admins see all
+      allow read: if isAdmin() || (isMember() && resource.data.uid == request.auth.uid);
+      allow update, delete: if isAdmin();
     }
 
-    // ---------- contact messages ----------
+    // ---------- contact messages (anyone can write to us, only admins can read) ----------
     match /messages/{messageId} {
       allow create: if request.resource.data.keys().hasOnly(['name','email','phone','subject','message','read','createdAt'])
         && request.resource.data.keys().hasAll(['name','email','message','read','createdAt'])
@@ -67,7 +88,7 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
-    // ---------- catalog: packages, prices, pictures (edited in Admin → Huts & Prices) ----------
+    // ---------- catalog: packages & prices ----------
     match /catalog/{itemId} {
       allow read: if true;
       allow create, update: if isAdmin()
@@ -77,7 +98,34 @@ service cloud.firestore {
             : (isStr(request.resource.data.name, 1, 100)
                && (request.resource.data.price == null
                    || (request.resource.data.price is number && request.resource.data.price >= 0 && request.resource.data.price <= 100000000))
-               && isStr(request.resource.data.img, 1, 900000)));   // image URL or compressed data-URL (<1 MB doc limit)
+               && isStr(request.resource.data.img, 1, 900000)));
+      allow delete: if isAdmin();
+    }
+
+    // ---------- huts shown on the Beach Huts page ----------
+    match /huts/{hutId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['id','name','tag','desc','capacity','rooms','washrooms','price','amenities','images','visible','order'])
+        && isStr(request.resource.data.name, 1, 100)
+        && optStr(request.resource.data, 'tag', 40)
+        && optStr(request.resource.data, 'desc', 1500)
+        && optStr(request.resource.data, 'amenities', 600)
+        && (request.resource.data.price == null
+            || (request.resource.data.price is number && request.resource.data.price >= 0 && request.resource.data.price <= 100000000))
+        && request.resource.data.images is list
+        && request.resource.data.images.size() <= 6;
+      allow delete: if isAdmin();
+    }
+
+    // ---------- gallery pictures ----------
+    match /gallery/{picId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['id','img','cat','caption','order'])
+        && isStr(request.resource.data.img, 1, 900000)
+        && request.resource.data.cat in ['drone','sunset','events','night','palms']
+        && optStr(request.resource.data, 'caption', 120);
       allow delete: if isAdmin();
     }
 

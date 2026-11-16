@@ -152,22 +152,27 @@
     slot.innerHTML = `<a href="auth.html" class="tbhk-signin-link"><i class="fa-regular fa-user"></i> Sign in</a>`;
   }
 
+  const escH = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
   function renderSignedIn(slot, profile, isAdmin) {
+    const isGuest = profile.provider === "guest";
     const wrap = document.createElement("div");
     wrap.className = "tbhk-profile";
     wrap.innerHTML = `
       <button class="tbhk-profile-btn" type="button">
-        <span class="tbhk-avatar">${initials(profile.name)}</span>
-        <span class="d-none d-sm-inline">${(profile.name || "Guest").split(" ")[0]}</span>
+        <span class="tbhk-avatar">${escH(initials(profile.name))}</span>
+        <span class="d-none d-sm-inline">${escH((profile.name || "Guest").split(" ")[0])}</span>
         <i class="fa-solid fa-chevron-down" style="font-size:.65rem;"></i>
       </button>
       <div class="tbhk-dropdown">
         <div style="padding:.5rem .7rem;">
-          <div style="font-weight:800;font-size:.85rem;">${profile.name || "Guest"}</div>
-          <div style="font-size:.72rem;color:var(--ink-faint);">${profile.email || "Guest session"}</div>
+          <div style="font-weight:800;font-size:.85rem;">${escH(profile.name || "Guest")}</div>
+          <div style="font-size:.72rem;color:var(--ink-faint);">${escH(profile.email || "Browsing as guest")}</div>
         </div>
         <div class="divider"></div>
-        <a href="booking.html"><i class="fa-regular fa-calendar-check"></i> My bookings</a>
+        ${isGuest
+          ? '<a href="auth.html?redirect=booking.html"><i class="fa-solid fa-right-to-bracket"></i> Sign in</a><a href="auth.html?tab=register&redirect=booking.html"><i class="fa-solid fa-user-plus"></i> Create account</a>'
+          : '<a href="booking.html"><i class="fa-regular fa-calendar-check"></i> Book &amp; my bookings</a>'}
         ${isAdmin ? '<a href="admin.html"><i class="fa-solid fa-gauge"></i> Admin dashboard</a>' : ""}
         <div class="divider"></div>
         <button type="button" data-logout><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out</button>
@@ -218,7 +223,15 @@
         const { auth, fns } = window.tbhkFirebase;
         fns.onAuthStateChanged(auth, (user) => {
           if (user) {
-            const profile = { uid: user.uid, name: user.displayName || (user.email ? user.email.split("@")[0] : "Guest"), email: user.email || "" };
+            const prev = fromLocalSession();
+            const same = prev && prev.uid === user.uid;
+            const profile = {
+              uid: user.uid,
+              name: user.displayName || (user.email ? user.email.split("@")[0] : "Guest"),
+              email: user.email || "",
+              phone: same ? prev.phone || "" : "",
+              provider: user.isAnonymous ? "guest" : (same && prev.provider && prev.provider !== "guest" ? prev.provider : "password"),
+            };
             localStorage.setItem("tbhk-session", JSON.stringify(profile));
             paint(profile);
           } else {

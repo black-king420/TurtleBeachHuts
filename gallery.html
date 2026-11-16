@@ -176,23 +176,27 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
 <script type="module" src="js/firebase-config.js"></script>
 <script src="js/data-store.js"></script>
+<script src="js/content.js"></script>
 <script src="js/main.js"></script>
 <script>if (window.AOS) AOS.init({ once:true, duration:700 });</script>
 <script>
+  const grid = document.getElementById('masonryGrid');
   document.querySelectorAll('#filterBar .filter-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       document.querySelectorAll('#filterBar .filter-btn').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
       const f = btn.dataset.filter;
-      document.querySelectorAll('#masonryGrid .item').forEach(item=>{
+      grid.querySelectorAll('.item').forEach(item=>{
         item.style.display = (f==='all' || item.dataset.cat===f) ? '' : 'none';
       });
     });
   });
   const lb = document.getElementById('lightbox');
   const lbImg = document.getElementById('lightboxImg');
-  document.querySelectorAll('#masonryGrid .item img').forEach(img=>{
-    img.addEventListener('click', ()=>{ lbImg.src = img.src; lbImg.alt = img.alt; lb.classList.add('show'); });
+  // delegated so photos added by the admin (rendered later) open too
+  grid.addEventListener('click', (e)=>{
+    const img = e.target.closest('.item img'); if(!img) return;
+    lbImg.src = img.src; lbImg.alt = img.alt; lb.classList.add('show');
   });
   document.getElementById('lightboxClose').addEventListener('click', ()=> lb.classList.remove('show'));
   lb.addEventListener('click', (e)=>{ if(e.target===lb) lb.classList.remove('show'); });

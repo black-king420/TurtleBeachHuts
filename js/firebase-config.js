@@ -62,7 +62,7 @@ async function boot() {
     } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
     const {
       getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc,
-      collection, addDoc, onSnapshot, query, orderBy, serverTimestamp
+      collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp
     } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
     const app = initializeApp(firebaseConfig);
@@ -79,7 +79,7 @@ async function boot() {
         signInWithPopup, signInAnonymously, sendPasswordResetEmail,
         onAuthStateChanged, signOut, updateProfile, sendEmailVerification,
         doc, setDoc, getDoc, updateDoc, deleteDoc,
-        collection, addDoc, onSnapshot, query, orderBy, serverTimestamp
+        collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp
       },
       ADMIN_EMAILS
     };

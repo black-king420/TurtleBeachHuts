@@ -28,20 +28,69 @@
   }
 
   const Store = {
+    /** Bookings require a real account (guests must sign in or register first). */
     async addBooking(data) {
       await whenReady();
-      const payload = { ...data, status: data.status || "Pending", createdAt: new Date().toISOString() };
+      const authErr = () => { const e = new Error("Please sign in or register to book."); e.code = "AUTH_REQUIRED"; return e; };
       if (isLive()) {
-        const { db, fns } = window.tbhkFirebase;
+        const { auth, db, fns } = window.tbhkFirebase;
+        const u = auth.currentUser;
+        if (!u || u.isAnonymous) throw authErr();
+        const payload = { ...data, status: "Pending", uid: u.uid, userEmail: u.email || "", userName: u.displayName || "" };
         const ref = await fns.addDoc(fns.collection(db, "bookings"), { ...payload, createdAt: fns.serverTimestamp() });
-        return { id: ref.id, ...payload };
+        return { id: ref.id, ...payload, createdAt: new Date().toISOString() };
       }
+      const sess = (() => { try { return JSON.parse(localStorage.getItem("tbhk-session") || "null"); } catch (e) { return null; } })();
+      if (!sess || sess.provider === "guest") throw authErr();
       const id = localId();
       const all = readLocal("tbhk-bookings");
-      const record = { id, ...payload };
+      const record = { id, ...data, status: "Pending", uid: sess.uid, userEmail: sess.email || "", userName: sess.name || "", createdAt: new Date().toISOString() };
       all.unshift(record);
       writeLocal("tbhk-bookings", all);
       return record;
+    },
+
+    /** The signed-in member's own bookings (newest first). */
+    async subscribeMyBookings(cb) {
+      await whenReady();
+      if (isLive()) {
+        const { auth, db, fns } = window.tbhkFirebase;
+        const u = auth.currentUser;
+        if (!u || u.isAnonymous) { cb([]); return () => {}; }
+        const q = fns.query(fns.collection(db, "bookings"), fns.where("uid", "==", u.uid));
+        return fns.onSnapshot(q, (snap) => {
+          const rows = snap.docs.map((d) => {
+            const v = d.data();
+            return { id: d.id, ...v, createdAt: v.createdAt && v.createdAt.toDate ? v.createdAt.toDate().toISOString() : v.createdAt };
+          }).sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+          cb(rows);
+        }, () => cb([]));
+      }
+      const sess = (() => { try { return JSON.parse(localStorage.getItem("tbhk-session") || "null"); } catch (e) { return null; } })();
+      const emit = () => cb(readLocal("tbhk-bookings").filter((b) => sess && b.uid && b.uid === sess.uid));
+      emit();
+      const handler = (e) => { if (e.detail.key === "tbhk-bookings") emit(); };
+      window.addEventListener("tbhk-local-store-changed", handler);
+      return () => window.removeEventListener("tbhk-local-store-changed", handler);
+    },
+
+    /** Registered accounts (admin only in live mode). */
+    async subscribeUsers(cb) {
+      await whenReady();
+      if (isLive()) {
+        const { db, fns } = window.tbhkFirebase;
+        return fns.onSnapshot(fns.collection(db, "users"), (snap) => {
+          cb(snap.docs.map((d) => {
+            const v = d.data();
+            const c = v.createdAt && v.createdAt.toDate ? v.createdAt.toDate().toISOString() : v.createdAt;
+            return { id: d.id, ...v, createdAt: c };
+          }));
+        }, () => cb([]));
+      }
+      let map = {};
+      try { map = JSON.parse(localStorage.getItem("tbhk-demo-users") || "{}"); } catch (e) {}
+      cb(Object.keys(map).map((email) => ({ id: "demo-" + email, name: map[email].name, email, phone: map[email].phone || "", provider: "demo", role: "customer", createdAt: map[email].createdAt || "" })));
+      return () => {};
     },
 
     async addMessage(data) {

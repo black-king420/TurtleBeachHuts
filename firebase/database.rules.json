@@ -6,11 +6,13 @@
       ".read": "auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com')",
       ".indexOn": [
         "createdAt",
-        "status"
+        "status",
+        "uid"
       ],
       "$bookingId": {
-        ".write": "(!data.exists() && newData.exists()) || (auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com'))",
-        ".validate": "newData.hasChildren(['name','phone','package','date','status','createdAt'])",
+        ".read": "auth != null && data.child('uid').val() === auth.uid",
+        ".write": "(!data.exists() && newData.exists() && auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && newData.child('uid').val() === auth.uid) || (auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com'))",
+        ".validate": "newData.hasChildren(['name','phone','package','status','createdAt','uid'])",
         "name": {
           ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
         },
@@ -23,14 +25,23 @@
         "email": {
           ".validate": "newData.isString() && newData.val().length <= 254"
         },
-        "package": {
-          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
-        },
         "date": {
           ".validate": "newData.isString() && newData.val().length <= 20"
         },
         "time": {
           ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "request": {
+          ".validate": "newData.isString() && newData.val().length <= 1500"
+        },
+        "coupon": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "userEmail": {
+          ".validate": "newData.isString() && newData.val().length <= 254"
+        },
+        "userName": {
+          ".validate": "newData.isString() && newData.val().length <= 120"
         },
         "adults": {
           ".validate": "newData.isString() || newData.isNumber()"
@@ -38,11 +49,11 @@
         "children": {
           ".validate": "newData.isString() || newData.isNumber()"
         },
-        "request": {
-          ".validate": "newData.isString() && newData.val().length <= 1500"
+        "package": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
         },
-        "coupon": {
-          ".validate": "newData.isString() && newData.val().length <= 40"
+        "uid": {
+          ".validate": "newData.val() === auth.uid || data.exists()"
         },
         "status": {
           ".validate": "(!data.exists() && newData.val() === 'Pending') || (auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com'))"
@@ -119,6 +130,47 @@
         "img": {
           ".validate": "newData.isString() && newData.val().length <= 900000"
         }
+      }
+    },
+    "huts": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com')",
+      "$hutId": {
+        ".validate": "newData.hasChildren(['name'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+        },
+        "desc": {
+          ".validate": "newData.isString() && newData.val().length <= 1500"
+        },
+        "amenities": {
+          ".validate": "newData.isString() && newData.val().length <= 600"
+        },
+        "tag": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        }
+      }
+    },
+    "gallery": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com')",
+      "$picId": {
+        ".validate": "newData.hasChildren(['img','cat'])",
+        "img": {
+          ".validate": "newData.isString() && newData.val().length <= 900000"
+        },
+        "cat": {
+          ".validate": "newData.val() === 'drone' || newData.val() === 'sunset' || newData.val() === 'events' || newData.val() === 'night' || newData.val() === 'palms'"
+        },
+        "caption": {
+          ".validate": "newData.isString() && newData.val().length <= 120"
+        }
+      }
+    },
+    "admins": {
+      "$adminUid": {
+        ".read": "auth != null && auth.uid === $adminUid",
+        ".write": false
       }
     },
     "users": {

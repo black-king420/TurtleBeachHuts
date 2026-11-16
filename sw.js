@@ -2,7 +2,7 @@
    Strategy: precache the app shell, cache-first for images/fonts/CDN libs,
    network-first for pages (so updates show up), offline fallback page.
    Firebase / Firestore / Google API calls are never cached. */
-const VERSION = 'tbhk-v1.1.0';
+const VERSION = 'tbhk-v1.2.0';
 const SHELL = `${VERSION}-shell`;
 const RUNTIME = `${VERSION}-runtime`;
 
@@ -10,7 +10,7 @@ const PRECACHE = [
   './', 'index.html', 'home.html', 'beach-hut.html', 'gallery.html', 'packages.html',
   'booking.html', 'contact.html', 'auth.html', 'offline.html', '404.html',
   'css/style.css', 'css/app.css', 'css/auth.css',
-  'js/main.js', 'js/app.js', 'js/catalog.js', 'js/auth.js', 'js/data-store.js', 'js/firebase-config.js',
+  'js/main.js', 'js/app.js', 'js/catalog.js', 'js/content.js', 'js/session.js', 'js/auth.js', 'js/data-store.js', 'js/firebase-config.js',
   'manifest.json', 'images/logo.png', 'images/icons/icon-192.png'
 ];
 

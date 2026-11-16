@@ -10,7 +10,10 @@
     dashboard: ['Dashboard', 'Your business at a glance.', 'fa-gauge-high', 'Home'],
     bookings: ['Bookings', 'Search, confirm, cancel and export reservations.', 'fa-regular fa-calendar-check', 'Bookings'],
     calendar: ['Calendar', 'See every arrival on the month view.', 'fa-regular fa-calendar-days', 'Calendar'],
-    catalog: ['Huts & Prices', 'Edit names, prices and pictures shown across the site.', 'fa-solid fa-umbrella-beach', 'Huts'],
+    catalog: ['Packages & Prices', 'Edit package names, prices and pictures shown across the site.', 'fa-solid fa-tags', 'Packages'],
+    huts: ['Huts', 'Add hut details and photos — the website shows them on the Beach Huts page.', 'fa-solid fa-umbrella-beach', 'Huts'],
+    gallery: ['Gallery', 'Add or remove pictures on the public Gallery page.', 'fa-regular fa-images', 'Gallery'],
+    users: ['Users', 'Everyone who registered an account.', 'fa-solid fa-users', 'Users'],
     messages: ['Messages', 'Questions sent from the contact form.', 'fa-regular fa-envelope', 'Inbox'],
     settings: ['Settings', 'Connection, access and export help.', 'fa-solid fa-gear', 'Settings']
   };
@@ -49,10 +52,14 @@
   const bar = document.createElement('nav');
   bar.className = 'app-tabbar admin-tabbar';
   bar.setAttribute('aria-label', 'Admin quick navigation');
-  bar.innerHTML = ['dashboard', 'bookings', 'calendar', 'catalog', 'messages'].map((k) =>
+  bar.innerHTML = ['dashboard', 'bookings', 'calendar', 'messages'].map((k) =>
     `<button type="button" class="app-tab" data-tab="${k}"><i class="${iconCls(k)}"></i><span>${META[k][3]}</span><b class="tab-dot" data-dot="${k}" hidden></b></button>`).join('');
+  bar.insertAdjacentHTML('beforeend', '<button type="button" class="app-tab" data-menu><i class="fa-solid fa-grip"></i><span>Menu</span></button>');
   document.body.appendChild(bar);
-  bar.addEventListener('click', (e) => { const t = e.target.closest('[data-tab]'); if (t) show(t.dataset.tab); });
+  bar.addEventListener('click', (e) => {
+    if (e.target.closest('[data-menu]')) return openDrawer(true);
+    const t = e.target.closest('[data-tab]'); if (t) show(t.dataset.tab);
+  });
   function syncTabs(panel) {
     // admin.js toggles .active on the sidebar AFTER this runs, so trust the panel we were given
     const active = panel || $('.admin-nav button.active')?.dataset.panel;

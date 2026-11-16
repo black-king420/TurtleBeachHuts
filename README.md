@@ -129,3 +129,28 @@ Or paste each rules file into Console → Firestore → Rules / Realtime Databas
 (currently `ali4@gmail.com`) **and the email is verified**. Sign in to the admin with Google using that email,
 or verify the email, otherwise the dashboard will show "permission denied". If you add admins, update
 `ADMIN_EMAILS` in `js/firebase-config.js` and the list in both rules files.
+
+
+## Guests, accounts & booking
+- **Continue as Guest** opens the whole website with no login or registration (anonymous session).
+- **Booking requires an account.** Guests and signed-out visitors see a "Sign in / Create account" gate on the
+  booking page; after signing in they return to the booking form, pre-filled. Members see their own bookings there.
+- Register is quick: name + email + password (phone optional). Redirect targets are restricted to same-site pages.
+- In the Firebase console enable **Authentication → Sign-in method → Anonymous** (for guests), plus Email/Password
+  (and Google/Facebook if you use them). If Anonymous is off, guests still browse — they just have no Firebase session.
+
+## Admin additions
+`Packages` (prices) · **Huts** (add hut details + up to 6 photos; the original hut always stays unless you remove it) ·
+**Gallery** (add/remove/re-categorise pictures) · **Users** (registered accounts + how many bookings each made) ·
+Bookings show which account made them. Huts/gallery are stored in Firestore collections `huts` and `gallery`
+(pictures are compressed and stored inside the documents, so keep to a few good photos per hut).
+
+## Admin access (rules)
+`firebase/firestore.rules` treats someone as admin if their **verified** email is on the allow-list **or** their UID
+has a document at `admins/{uid}` (create it by hand in the console — no email verification needed).
+
+## Starter huts
+The Beach Huts page ships with the original **Classic Beach Hut** plus three starter huts (**Family Hut**, **BBQ Deck Hut**,
+**Luxury Hut**) written only from details already on the site. Prices/rooms for the new ones are left blank ("Ask for price")
+until you set them in Admin → Huts. If you had already saved huts in Firebase before this update, your saved list is
+used as-is — use Admin → Huts → Add hut (or Reset) to bring the starter huts in.

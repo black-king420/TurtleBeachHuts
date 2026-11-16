@@ -521,3 +521,62 @@ html[data-theme="dark"] .cmd-btn{background:rgba(255,255,255,.05);}
   .cal-nav>*{flex:1 1 0 !important;min-height:44px;justify-content:center;}
   .cal-nav #calToday{flex:2 1 0 !important;}
 }
+
+/* ==========================================================================
+   V4 — Huts editor, Gallery editor, Users
+   ========================================================================== */
+.panel-hint{font-size:.85rem;color:var(--ink-soft);background:var(--sunset-light);border-radius:14px;padding:.7rem .9rem;margin:.2rem 0 .6rem;display:flex;gap:.6rem;align-items:flex-start;line-height:1.5;}
+.panel-hint i{color:var(--sunset-deep);margin-top:.15rem;}
+.cat-row3{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;}
+.hut-ed-grid{grid-template-columns:repeat(auto-fill,minmax(380px,1fr));}
+.hut-ed-imgs{padding:.9rem .9rem 0;background:linear-gradient(180deg,var(--sand),transparent);}
+.img-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;}
+.img-chip{position:relative;aspect-ratio:4/3;border-radius:14px;overflow:hidden;background:var(--sand);box-shadow:var(--shadow-soft);}
+.img-chip.cover{grid-column:span 3;aspect-ratio:16/8;}
+.img-chip img{width:100%;height:100%;object-fit:cover;display:block;}
+.cover-tag{position:absolute;left:8px;top:8px;background:var(--gold);color:var(--ink);font:800 .68rem var(--font-body);padding:.2rem .6rem;border-radius:99px;}
+.chip-btn{position:absolute;width:30px;height:30px;border-radius:50%;border:0;display:grid;place-items:center;font-size:.75rem;cursor:pointer;color:#fff;background:rgba(16,48,47,.7);backdrop-filter:blur(6px);transition:all .25s var(--ease);}
+.chip-btn:hover{background:var(--sunset);transform:scale(1.1);}
+.img-chip .chip-btn[data-act=cover]{left:6px;top:6px;}
+.chip-btn.del{right:6px;top:6px;}
+.chip-btn.del:hover{background:var(--danger);}
+.img-empty{grid-column:span 3;aspect-ratio:16/6;border-radius:14px;border:2px dashed rgba(16,48,47,.2);display:grid;place-items:center;color:var(--ink-faint);font-size:.85rem;}
+.img-add{display:flex;gap:.5rem;align-items:center;padding:.7rem 0 .8rem;}
+.img-add small{margin-left:auto;color:var(--ink-faint);font-weight:700;}
+.img-add label.btn-sm-tbhk{cursor:pointer;}
+
+.gal-add{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;margin:.2rem 0 1rem;}
+.gal-add select{border-radius:14px;padding:.6rem .9rem;border:1.5px solid rgba(16,48,47,.14);background:var(--shell);min-height:44px;font:600 .88rem var(--font-body);color:var(--ink);}
+.gal-upload{cursor:pointer;padding:.65rem 1.2rem;font-size:.88rem;}
+.gal-filter{margin:0;}
+.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;}
+.gal-tile{margin:0;background:var(--white);border:1px solid var(--glass-border);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-card);transition:transform .35s var(--ease),box-shadow .35s;}
+.gal-tile:hover{transform:translateY(-4px);box-shadow:var(--shadow-card-hover);}
+.gal-img{position:relative;aspect-ratio:4/3;background:var(--sand);}
+.gal-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.gal-pos{position:absolute;left:8px;top:8px;background:rgba(255,255,255,.92);font:600 .68rem var(--font-mono);padding:.15rem .5rem;border-radius:8px;}
+.gal-tile figcaption{padding:.7rem;display:flex;flex-direction:column;gap:.5rem;}
+.gal-tile input,.gal-tile select{width:100%;border-radius:10px;border:1.5px solid rgba(16,48,47,.12);background:var(--shell);padding:.5rem .65rem;font:500 .85rem var(--font-body);color:var(--ink);min-width:0;}
+.gal-row{display:flex;gap:.35rem;align-items:center;}
+.gal-row select{flex:1;}
+.gal-row .btn-sm-tbhk{padding:.45rem .6rem;}
+.gal-row .btn-sm-tbhk:disabled{opacity:.35;}
+
+@media (max-width:760px){
+  .hut-ed-grid{grid-template-columns:minmax(0,1fr);}
+  .gal-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem;}
+  .gal-add{flex-direction:column;align-items:stretch;}
+  .gal-add>*{width:100%;justify-content:center;}
+  .gal-row{flex-wrap:wrap;}
+}
+html[data-theme="dark"] .gal-tile,html[data-theme="dark"] .panel-hint{border-color:rgba(255,255,255,.08);}
+html[data-theme="dark"] .panel-hint{background:rgba(232,114,44,.14);}
+
+/* fixes from phone review */
+.panel-hint{display:block;}
+.panel-hint i{margin-right:.5rem;}
+@media (max-width:760px){
+  .gal-row select{flex:1 1 100%;}
+  .gal-row .btn-sm-tbhk{flex:1 1 0;justify-content:center;}
+  .gal-tile figcaption{padding:.55rem;}
+}

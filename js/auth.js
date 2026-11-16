@@ -57,16 +57,13 @@
     await fns.setDoc(fns.doc(db, "users", uid), { ...data, updatedAt: fns.serverTimestamp() }, { merge: true });
   }
 
-  function redirectAfterAuth(profile) {
+  function redirectAfterAuth(profile, forcedTarget) {
     const params = new URLSearchParams(location.search);
-    const dest = params.get("redirect");
-    const admins = (window.tbhkFirebase && window.tbhkFirebase.ADMIN_EMAILS) || [];
-    const goAdmin = dest === "admin" || (profile.email && admins.includes(profile.email) && dest === null && false);
+    // Only same-site page names are accepted (blocks open-redirect / javascript: links)
+    const target = forcedTarget || (window.TBHKSession ? window.TBHKSession.safeRedirect(params.get("redirect")) : "home.html");
     document.querySelectorAll(".auth-panel").forEach((p) => p.classList.add("d-none"));
     showPanel("authSuccess");
-    setTimeout(() => {
-      window.location.href = goAdmin ? "admin.html" : (dest || "home.html");
-    }, 1100);
+    setTimeout(() => { window.location.href = target; }, 900);
   }
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -134,6 +131,10 @@
           if (isLive()) {
             const { auth, fns } = window.tbhkFirebase;
             const cred = await fns.signInWithEmailAndPassword(auth, email, password);
+            const adminList = window.tbhkFirebase.ADMIN_EMAILS || [];
+            if (adminList.includes(email) && !cred.user.emailVerified) {
+              try { await fns.sendEmailVerification(cred.user); window.tbhkToast && window.tbhkToast("Admin accounts need a verified email — we just sent you a link.", "success"); } catch (e3) {}
+            }
             const profile = { uid: cred.user.uid, name: cred.user.displayName || email.split("@")[0], email, provider: "password" };
             setSession(profile);
             redirectAfterAuth(profile);
@@ -162,17 +163,19 @@
         const name = $("#registerName").value.trim();
         const email = $("#registerEmail").value.trim();
         const password = $("#registerPassword").value;
-        const confirm = $("#registerConfirm").value;
+        const confirmEl = $("#registerConfirm");
         const btn = $("#registerSubmit");
-        if (password !== confirm) { setError(panel, "Passwords don't match."); return; }
+        if (confirmEl && password !== confirmEl.value) { setError(panel, "Passwords don't match."); return; }
         if (password.length < 6) { setError(panel, "Password should be at least 6 characters."); return; }
 
         // ---- Phone capture + validation ----
         // Reads the validated E.164 number exposed by the inline country-code
         // script on auth.html (window.tbhkGetFullPhone).
-        const phone = typeof window.tbhkGetFullPhone === "function" ? window.tbhkGetFullPhone() : null;
-        if (!phone) {
-          setError(panel, "Please enter a valid phone number.");
+        // Phone is optional here (it's collected again at booking). If typed, it must be valid.
+        const rawPhone = ($("#registerPhone") && $("#registerPhone").value || "").trim();
+        const phone = rawPhone ? (typeof window.tbhkGetFullPhone === "function" ? window.tbhkGetFullPhone() : rawPhone) : "";
+        if (rawPhone && !phone) {
+          setError(panel, "That phone number doesn't look right — fix it or leave it empty.");
           return;
         }
 
@@ -191,7 +194,7 @@
           } else {
             const users = JSON.parse(localStorage.getItem("tbhk-demo-users") || "{}");
             if (users[email]) throw { code: "auth/email-already-in-use" };
-            users[email] = { name, email, phone, password };
+            users[email] = { name, email, phone, password, createdAt: new Date().toISOString() };
             localStorage.setItem("tbhk-demo-users", JSON.stringify(users));
             const profile = { uid: "demo-" + email, name, email, phone, provider: "demo" };
             setSession(profile);
@@ -262,15 +265,29 @@
           const cred = await fns.signInAnonymously(auth);
           const profile = { uid: cred.user.uid, name: "Guest", email: "", provider: "guest" };
           setSession(profile);
-          redirectAfterAuth(profile);
+          redirectAfterAuth(profile, "home.html");
         } else {
           const profile = { uid: "demo-guest-" + Date.now(), name: "Guest", email: "", provider: "guest" };
           setSession(profile);
-          redirectAfterAuth(profile);
+          redirectAfterAuth(profile, "home.html");
         }
       } catch (err) {
-        setError($("#panel-login"), friendlyError(err));
+        // Anonymous sign-in may be switched off in the Firebase console — guests can still browse the whole site.
+        const profile = { uid: "guest-" + Date.now(), name: "Guest", email: "", provider: "guest" };
+        setSession(profile);
+        redirectAfterAuth(profile, "home.html");
       }
     });
+
+    // ?tab=register opens the Create-account tab; show a friendly note when arriving from the booking page
+    const qp = new URLSearchParams(location.search);
+    if (qp.get("tab") === "register") {
+      const t = document.querySelector('.auth-tabs button[data-target="panel-register"]');
+      t && t.click();
+    }
+    const note = $("#authNotice");
+    if (note && /booking/.test(qp.get("redirect") || "")) note.classList.remove("d-none");
+    const first = $("#loginEmail");
+    first && !/Mobi|Android/i.test(navigator.userAgent) && first.focus();
   });
 })();

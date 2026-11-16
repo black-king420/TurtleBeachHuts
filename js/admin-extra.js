@@ -79,6 +79,7 @@
           ${row('fa-regular fa-clock', 'Time', esc(b.time || ''))}
           ${row('fa-solid fa-user-group', 'Party', `${esc(b.adults || 0)} adults, ${esc(b.children || 0)} children <em>${guests} guests</em>`)}
         </div>
+        ${b.userEmail || b.userName ? `<div class="bk-card">${row('fa-solid fa-id-badge', 'Booked by account', `${esc(b.userName || '')} <em>${esc(b.userEmail || 'no email')}</em>`)}</div>` : ''}
         <div class="bk-card">
           ${row('fa-solid fa-phone', 'Phone', esc(b.phone || ''))}
           ${row('fa-brands fa-whatsapp', 'WhatsApp', esc(b.whatsapp || ''))}
@@ -228,12 +229,12 @@
   let items = [], idx = 0;
 
   const PAGES = [['dashboard', 'Dashboard', 'fa-solid fa-gauge-high'], ['bookings', 'Bookings', 'fa-regular fa-calendar-check'], ['calendar', 'Calendar', 'fa-regular fa-calendar-days'],
-    ['catalog', 'Huts & Prices', 'fa-solid fa-umbrella-beach'], ['messages', 'Messages', 'fa-regular fa-envelope'], ['settings', 'Settings', 'fa-solid fa-gear']];
+    ['catalog', 'Packages & Prices', 'fa-solid fa-tags'], ['huts', 'Huts', 'fa-solid fa-umbrella-beach'], ['gallery', 'Gallery', 'fa-regular fa-images'], ['users', 'Users', 'fa-solid fa-users'], ['messages', 'Messages', 'fa-regular fa-envelope'], ['settings', 'Settings', 'fa-solid fa-gear']];
   function build(q) {
     q = q.trim().toLowerCase(); const out = [];
     PAGES.forEach(([p, label, ico]) => { if (!q || label.toLowerCase().includes(q) || ('go ' + label).toLowerCase().includes(q)) out.push({ g: 'Go to', ico, label, sub: 'Open page', run: () => goPanel(p) }); });
     const cmds = [
-      ['fa-solid fa-plus', 'Add a new package', 'Huts & Prices', () => { goPanel('catalog'); setTimeout(() => $('#catAdd')?.click(), 250); }],
+      ['fa-solid fa-plus', 'Add a new package', 'Packages', () => { goPanel('catalog'); setTimeout(() => $('#catAdd')?.click(), 250); }],
       ['fa-solid fa-file-excel', 'Export everything to Excel', 'Bookings + messages', () => $('#exportAllBtn')?.click()],
       ['fa-solid fa-circle-half-stroke', 'Toggle dark / light theme', 'Appearance', () => $('.theme-toggle')?.click()],
       ['fa-solid fa-arrow-up-right-from-square', 'View the website', 'Opens home page', () => { location.href = 'home.html'; }],

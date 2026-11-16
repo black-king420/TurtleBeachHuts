@@ -70,8 +70,28 @@
         showDenied(user.email);
         return;
       }
+      if (!user.emailVerified) { showVerify(user); return; }
       revealDashboard({ name: user.displayName || user.email, email: user.email });
     });
+  }
+
+  // Admin rules require a verified email (stops someone registering an admin's address with a password).
+  function showVerify(user) {
+    const box = $("#adminGuardScreen");
+    box.innerHTML = `
+      <div class="guard-box">
+        <i class="fa-solid fa-envelope-circle-check guard-icon"></i>
+        <h2>Verify your email</h2>
+        <p>${esc(user.email)} is an admin account, but its email isn't verified yet. Verify it (or sign in with Google using this address) so the database lets you in.</p>
+        <button class="btn-tbhk btn-sunset" id="vSend"><i class="fa-solid fa-paper-plane"></i> Send verification email</button>
+        <button class="btn-tbhk btn-ghost-light" id="vDone"><i class="fa-solid fa-rotate"></i> I've verified — continue</button>
+        <button class="btn-tbhk btn-ghost-light" id="vOut">Sign out</button>
+      </div>`;
+    box.classList.remove("d-none"); $("#adminApp").classList.add("d-none");
+    const { auth, fns } = window.tbhkFirebase;
+    $("#vSend").onclick = async () => { try { await fns.sendEmailVerification(user); window.tbhkToast && window.tbhkToast("Verification email sent — check your inbox.", "success"); } catch (e) { window.tbhkToast && window.tbhkToast("Couldn't send right now, try again in a minute.", "error"); } };
+    $("#vDone").onclick = async () => { await user.reload(); location.reload(); };
+    $("#vOut").onclick = async () => { await fns.signOut(auth); location.href = "auth.html?redirect=admin"; };
   }
 
   function showDenied(email) {

@@ -16,6 +16,11 @@
   #calendar{font-family:var(--font-body); font-size:.85rem;}
   .fc{--fc-border-color:rgba(16,48,47,.1); --fc-today-bg-color:rgba(232,114,44,.08);}
   .fc .fc-daygrid-day.tbhk-booked{background:rgba(193,68,14,.12);}
+  .gate-icon{width:72px;height:72px;margin:0 auto;border-radius:24px;display:grid;place-items:center;font-size:1.6rem;color:#fff;background:linear-gradient(135deg,#F28A3F,#C1440E);box-shadow:0 20px 40px -16px rgba(193,68,14,.7);}
+  .my-book{display:flex;align-items:center;gap:.8rem;padding:.7rem .9rem;border-radius:16px;background:var(--shell);border:1px solid rgba(16,48,47,.08);margin-bottom:.6rem;}
+  .my-book .mb-main{flex:1;min-width:0;}.my-book strong{display:block;font-size:.9rem;}.my-book small{color:var(--ink-faint);}
+  .mb-pill{font-size:.7rem;font-weight:800;padding:.25rem .7rem;border-radius:99px;background:#FFF1C2;color:#8a6200;}
+  .mb-pill.confirmed{background:#D9F2E5;color:#14693f;}.mb-pill.cancelled{background:#FAD9D9;color:#a32626;}
   .success-screen{display:none; text-align:center; padding:4rem 0;}
   .success-screen.show{display:block;}
 </style>
@@ -73,7 +78,17 @@
       </div>
 
       <div class="col-lg-7">
-        <div class="card-tbhk p-4">
+        <div class="card-tbhk p-4 text-center d-none" id="bookingGate">
+          <div class="gate-icon"><i class="fa-solid fa-lock"></i></div>
+          <h4 class="mt-3" id="gateTitle">Sign in to book your hut</h4>
+          <p id="gateText" style="color:rgba(16,48,47,.7);max-width:420px;margin:.4rem auto 1.4rem;">Browsing is open to everyone. To send a booking request, please sign in or create a free account — it takes under a minute.</p>
+          <div class="d-flex gap-2 justify-content-center flex-wrap">
+            <a class="btn-tbhk btn-sunset" id="gateLogin" href="auth.html?redirect=booking.html"><i class="fa-solid fa-right-to-bracket"></i> Sign in</a>
+            <a class="btn-tbhk btn-outline-tbhk" id="gateRegister" href="auth.html?tab=register&redirect=booking.html"><i class="fa-solid fa-user-plus"></i> Create account</a>
+          </div>
+          <a href="home.html" class="d-inline-block mt-3" style="font-size:.85rem;">Keep browsing the website →</a>
+        </div>
+        <div class="card-tbhk p-4" id="bookingFormCard">
           <h5 class="mb-3">Booking details</h5>
           <form id="bookingForm" class="row g-3">
             <div class="col-md-6"><label class="eyebrow mb-1">Full name</label><input required class="form-control-tbhk" id="bName"></div>
@@ -99,6 +114,10 @@
             </div>
           </form>
         </div>
+        <div class="card-tbhk p-4 mt-4 d-none" id="myBookings">
+          <h5 class="mb-3"><i class="fa-regular fa-calendar-check me-2" style="color:var(--sunset-deep);"></i>My bookings</h5>
+          <div id="myBookingsList"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -108,7 +127,7 @@
   <div class="success-check mx-auto" style="color:var(--lagoon);background:var(--shell);"><i class="fa-solid fa-check"></i></div>
   <h2 class="mt-3">Thank you, <span id="tyName">guest</span>!</h2>
   <p style="color:rgba(16,48,47,.7);max-width:480px;margin:0 auto;">Your booking request for <strong id="tyPackage"></strong> on <strong id="tyDate"></strong> has been received. Our team will confirm on WhatsApp within a few hours.</p>
-  <a href="home.html" class="btn-tbhk btn-sunset mt-4">Back to home</a>
+  <a href="booking.html" class="btn-tbhk btn-sunset mt-4">View my bookings</a> <a href="home.html" class="btn-tbhk btn-outline-tbhk mt-4">Back to home</a>
 </section>
 
 <footer class="tbhk-footer">
@@ -172,6 +191,7 @@
 <script src="js/catalog.js"></script>
 
 <script src="js/main.js"></script>
+<script src="js/session.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     // const calEl = document.getElementById('calendar');
@@ -226,7 +246,42 @@
       calendar.render();
     }
 
-    document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+    // ---------- booking requires a real account (guests browse freely) ----------
+    const form = document.getElementById('bookingForm');
+    const gate = document.getElementById('bookingGate');
+    const formCard = document.getElementById('bookingFormCard');
+    const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function showGate(guest) {
+      formCard.classList.add('d-none'); gate.classList.remove('d-none');
+      if (guest) {
+        document.getElementById('gateTitle').textContent = "You're browsing as a guest";
+        document.getElementById('gateText').textContent = 'Create a free account or sign in to send your booking request. You can keep browsing anytime.';
+      }
+    }
+    // hold the form until we know who the visitor is (prevents a flash of the form)
+    formCard.classList.add('d-none');
+    window.TBHKSession.ready().then(profile => {
+      if (!window.TBHKSession.isMember(profile)) { showGate(window.TBHKSession.isGuest(profile)); return; }
+      formCard.classList.remove('d-none');
+      // pre-fill from the account
+      const set = (id, v) => { const el = document.getElementById(id); if (el && v && !el.value) el.value = v; };
+      set('bName', profile.name); set('bEmail', profile.email); set('bPhone', profile.phone); set('bWhatsapp', profile.phone);
+      // ?hut=Name from the Beach Huts page
+      const hut = new URLSearchParams(location.search).get('hut');
+      if (hut) { const r = document.getElementById('bRequest'); if (r && !r.value) r.value = 'Preferred hut: ' + hut.slice(0, 80); }
+      // my bookings
+      const box = document.getElementById('myBookings'), list = document.getElementById('myBookingsList');
+      window.TBHKStore.subscribeMyBookings(rows => {
+        if (!rows.length) { box.classList.add('d-none'); return; }
+        box.classList.remove('d-none');
+        list.innerHTML = rows.slice(0, 6).map(r => {
+          const st = String(r.status || 'Pending'), cls = ['confirmed','cancelled'].includes(st.toLowerCase()) ? st.toLowerCase() : '';
+          return `<div class="my-book"><div class="mb-main"><strong>${esc(r.package)}</strong><small>${esc(r.date || 'No date')}${r.time ? ' · ' + esc(r.time) : ''}</small></div><span class="mb-pill ${cls}">${esc(st)}</span></div>`;
+        }).join('');
+      });
+    });
+
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('bookingSubmit');
       const original = btn.innerHTML;
@@ -255,8 +310,9 @@
         document.getElementById('thankYouScreen').classList.add('show');
         window.scrollTo({top:0, behavior:'smooth'});
       } catch (err) {
-        window.tbhkToast && window.tbhkToast("Couldn't submit booking — please try again.", 'error');
         btn.disabled = false; btn.innerHTML = original;
+        if (err && err.code === 'AUTH_REQUIRED') { showGate(true); window.scrollTo({top: 0, behavior: 'smooth'}); return; }
+        window.tbhkToast && window.tbhkToast("Couldn't submit booking — please try again.", 'error');
       }
     });
   });

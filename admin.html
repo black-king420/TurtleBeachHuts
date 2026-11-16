@@ -47,7 +47,10 @@
       <button type="button" data-panel="dashboard" class="active"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></button>
       <button type="button" data-panel="bookings"><i class="fa-regular fa-calendar-check"></i><span>Bookings</span><b class="nav-count" id="navPending" hidden>0</b></button>
       <button type="button" data-panel="calendar"><i class="fa-regular fa-calendar-days"></i><span>Calendar</span></button>
-      <button type="button" data-panel="catalog"><i class="fa-solid fa-umbrella-beach"></i><span>Huts &amp; Prices</span></button>
+      <button type="button" data-panel="catalog"><i class="fa-solid fa-tags"></i><span>Packages</span></button>
+      <button type="button" data-panel="huts"><i class="fa-solid fa-umbrella-beach"></i><span>Huts</span></button>
+      <button type="button" data-panel="gallery"><i class="fa-regular fa-images"></i><span>Gallery</span></button>
+      <button type="button" data-panel="users"><i class="fa-solid fa-users"></i><span>Users</span><b class="nav-count" id="navUsers" hidden>0</b></button>
       <button type="button" data-panel="messages"><i class="fa-regular fa-envelope"></i><span>Messages</span><b class="nav-count" id="navUnread" hidden>0</b></button>
       <button type="button" data-panel="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></button>
     </nav>
@@ -206,7 +209,7 @@
     <section class="admin-view d-none" id="view-catalog">
       <div class="admin-panel-card">
         <div class="admin-panel-head">
-          <div><h3><i class="fa-solid fa-umbrella-beach"></i> Huts &amp; Prices</h3>
+          <div><h3><i class="fa-solid fa-tags"></i> Packages &amp; Prices</h3>
             <p class="cat-mode" id="catMode">Loading…</p></div>
           <div class="admin-filters cat-toolbar">
             <button class="btn-sm-tbhk" id="catAdd"><i class="fa-solid fa-plus"></i> Add package</button>
@@ -221,6 +224,65 @@
         </div>
       </div>
       <div class="cat-grid" id="catGrid"></div>
+    </section>
+
+    <!-- ---------- HUTS ---------- -->
+    <section class="admin-view d-none" id="view-huts">
+      <div class="admin-panel-card">
+        <div class="admin-panel-head">
+          <div><h3><i class="fa-solid fa-umbrella-beach"></i> Huts</h3>
+            <p class="cat-mode" id="hutMode">Loading…</p></div>
+          <div class="admin-filters cat-toolbar">
+            <button class="btn-sm-tbhk" id="hutAdd"><i class="fa-solid fa-plus"></i> Add hut</button>
+            <button class="btn-sm-tbhk danger" id="hutReset"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+            <button class="btn-tbhk btn-sunset" id="hutSave" disabled><i class="fa-solid fa-floppy-disk"></i> Save all changes</button>
+          </div>
+        </div>
+        <p class="panel-hint"><i class="fa-solid fa-circle-info"></i> Everything here appears in <b>Our huts</b> on the Beach Huts page. The original hut stays unless you remove it yourself — new huts are simply added next to it.</p>
+        <span class="cat-status" id="hutStatus" role="status"></span>
+      </div>
+      <div class="cat-grid hut-ed-grid" id="hutGrid"></div>
+    </section>
+
+    <!-- ---------- GALLERY ---------- -->
+    <section class="admin-view d-none" id="view-gallery">
+      <div class="admin-panel-card">
+        <div class="admin-panel-head">
+          <div><h3><i class="fa-regular fa-images"></i> Gallery pictures</h3>
+            <p class="cat-mode" id="galMode">Loading…</p></div>
+          <div class="admin-filters cat-toolbar">
+            <button class="btn-sm-tbhk danger" id="galReset"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+            <button class="btn-tbhk btn-sunset" id="galSave" disabled><i class="fa-solid fa-floppy-disk"></i> Save all changes</button>
+          </div>
+        </div>
+        <div class="gal-add">
+          <select id="galNewCat" aria-label="Category for new pictures"></select>
+          <label class="btn-tbhk btn-sunset gal-upload"><i class="fa-solid fa-cloud-arrow-up"></i> Add pictures
+            <input type="file" id="galFiles" accept="image/*" multiple hidden></label>
+          <button class="btn-sm-tbhk" id="galUrl"><i class="fa-solid fa-link"></i> Add by link</button>
+          <span class="cat-status" id="galStatus" role="status"></span>
+        </div>
+        <div class="status-tabs gal-filter" id="galFilter"></div>
+      </div>
+      <div class="gal-grid" id="galGrid"></div>
+    </section>
+
+    <!-- ---------- USERS ---------- -->
+    <section class="admin-view d-none" id="view-users">
+      <div class="admin-panel-card">
+        <div class="admin-panel-head">
+          <h3><i class="fa-solid fa-users"></i> Registered users <span class="soft-chip" id="userCount">0</span></h3>
+          <div class="admin-filters">
+            <div class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="userSearch" placeholder="Search name, email or phone…"></div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>User</th><th>Email</th><th>Phone</th><th>Sign-in</th><th>Joined</th><th>Bookings</th></tr></thead>
+            <tbody id="usersTableBody"><tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i>Loading users…</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
     </section>
 
     <!-- ---------- MESSAGES ---------- -->
@@ -268,7 +330,9 @@
 <script src="js/main.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/catalog.js"></script>
+<script src="js/content.js"></script>
 <script src="js/admin-catalog.js"></script>
+<script src="js/admin-content.js"></script>
 <script src="js/admin-ui.js"></script>
 <script src="js/admin-extra.js"></script>
 <script src="js/app.js" defer></script>
