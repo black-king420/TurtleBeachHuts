@@ -62,51 +62,37 @@
     const { auth, fns } = window.tbhkFirebase;
     fns.onAuthStateChanged(auth, (user) => {
       const admins = window.tbhkFirebase.ADMIN_EMAILS || [];
-      if (!user) {
-        window.location.href = "auth.html?redirect=admin";
+      if (!user || user.isAnonymous) {
+        // signed out or just a guest → the dedicated admin sign-in page
+        window.location.href = "admin-login.html";
         return;
       }
-      if (!admins.includes(user.email)) {
+      if (!admins.map((e) => String(e).toLowerCase()).includes(String(user.email || "").toLowerCase())) {
         showDenied(user.email);
         return;
       }
-      if (!user.emailVerified) { showVerify(user); return; }
       revealDashboard({ name: user.displayName || user.email, email: user.email });
     });
   }
 
-  // Admin rules require a verified email (stops someone registering an admin's address with a password).
-  function showVerify(user) {
-    const box = $("#adminGuardScreen");
-    box.innerHTML = `
-      <div class="guard-box">
-        <i class="fa-solid fa-envelope-circle-check guard-icon"></i>
-        <h2>Verify your email</h2>
-        <p>${esc(user.email)} is an admin account, but its email isn't verified yet. Verify it (or sign in with Google using this address) so the database lets you in.</p>
-        <button class="btn-tbhk btn-sunset" id="vSend"><i class="fa-solid fa-paper-plane"></i> Send verification email</button>
-        <button class="btn-tbhk btn-ghost-light" id="vDone"><i class="fa-solid fa-rotate"></i> I've verified — continue</button>
-        <button class="btn-tbhk btn-ghost-light" id="vOut">Sign out</button>
-      </div>`;
-    box.classList.remove("d-none"); $("#adminApp").classList.add("d-none");
-    const { auth, fns } = window.tbhkFirebase;
-    $("#vSend").onclick = async () => { try { await fns.sendEmailVerification(user); window.tbhkToast && window.tbhkToast("Verification email sent — check your inbox.", "success"); } catch (e) { window.tbhkToast && window.tbhkToast("Couldn't send right now, try again in a minute.", "error"); } };
-    $("#vDone").onclick = async () => { await user.reload(); location.reload(); };
-    $("#vOut").onclick = async () => { await fns.signOut(auth); location.href = "auth.html?redirect=admin"; };
-  }
 
   function showDenied(email) {
     $("#adminGuardScreen").innerHTML = `
       <div class="guard-box">
         <i class="fa-solid fa-lock guard-icon"></i>
         <h2>Access restricted</h2>
-        <p>
-          ${esc(email)} isn't on the admin allow-list. Add it to <code>ADMIN_EMAILS</code> in
-          <code>js/firebase-config.js</code> to grant dashboard access.
-        </p>
-        <a href="home.html" class="btn-tbhk btn-sunset mt-4">Back to site</a>
+        <p>${esc(email)} is signed in, but it isn't an admin account.</p>
+        <button class="btn-tbhk btn-sunset" id="dSwitch"><i class="fa-solid fa-right-left"></i> Sign out &amp; use another account</button>
+        <a href="home.html" class="btn-tbhk btn-ghost-light">Back to site</a>
       </div>`;
     $("#adminGuardScreen").classList.remove("d-none");
     $("#adminApp").classList.add("d-none");
+    const sw = $("#dSwitch");
+    if (sw) sw.onclick = async () => {
+      localStorage.removeItem("tbhk-session");
+      try { await window.tbhkFirebase.fns.signOut(window.tbhkFirebase.auth); } catch (e) {}
+      location.href = "admin-login.html";
+    };
   }
 
   function revealDashboard(who) {
@@ -417,7 +403,7 @@
     $("#adminLogout")?.addEventListener("click", async () => {
       localStorage.removeItem("tbhk-session");
       try { if (window.tbhkFirebase?.auth) await window.tbhkFirebase.fns.signOut(window.tbhkFirebase.auth); } catch (e) {}
-      window.location.href = "auth.html";
+      window.location.href = window.tbhkFirebase?.auth ? "admin-login.html" : "home.html";
     });
   }
 

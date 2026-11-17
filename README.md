@@ -126,8 +126,7 @@ firebase deploy                                      # rules + website hosting
 Or paste each rules file into Console → Firestore → Rules / Realtime Database → Rules.
 
 **Admin access:** the rules treat a user as admin only if their email is in the list inside the rules file
-(currently `ali4@gmail.com`) **and the email is verified**. Sign in to the admin with Google using that email,
-or verify the email, otherwise the dashboard will show "permission denied". If you add admins, update
+(currently `ali4@gmail.com`). No email verification step is needed. If you add admins, update
 `ADMIN_EMAILS` in `js/firebase-config.js` and the list in both rules files.
 
 
@@ -146,11 +145,33 @@ Bookings show which account made them. Huts/gallery are stored in Firestore coll
 (pictures are compressed and stored inside the documents, so keep to a few good photos per hut).
 
 ## Admin access (rules)
-`firebase/firestore.rules` treats someone as admin if their **verified** email is on the allow-list **or** their UID
-has a document at `admins/{uid}` (create it by hand in the console — no email verification needed).
+`firebase/firestore.rules` treats someone as admin if their email is on the allow-list **or** their UID
+has a document at `admins/{uid}` (create it by hand in the console). No email verification is required — so create the
+admin account (Admin login → First-time setup) right after deploying; once it exists nobody else can register that address.
 
 ## Starter huts
 The Beach Huts page ships with the original **Classic Beach Hut** plus three starter huts (**Family Hut**, **BBQ Deck Hut**,
 **Luxury Hut**) written only from details already on the site. Prices/rooms for the new ones are left blank ("Ask for price")
 until you set them in Admin → Huts. If you had already saved huts in Firebase before this update, your saved list is
 used as-is — use Admin → Huts → Add hut (or Reset) to bring the starter huts in.
+
+## Admin login
+Open **`/admin-login.html`** (also linked as a small "Admin" link in every page footer).
+1. **First time:** choose *First-time setup*, enter your name, the admin email (must be listed in `ADMIN_EMAILS` in
+   `js/firebase-config.js` and in `firebase/firestore.rules`) and a password. The dashboard opens straight away.
+2. **After that:** *Sign in* → dashboard opens. Forgot password? is on the login page.
+Anyone not signed in, any guest, and any non-admin account is turned away; signing out returns to the login page.
+If Firebase can't load, the dashboard stays locked ("Can't reach the server") instead of opening.
+
+## Troubleshooting: "Missing or insufficient permissions" when saving
+That message comes from Firebase, not the website: the security rules **published in your Firebase project** don't accept your
+account. Editing `firebase/firestore.rules` on your computer changes nothing until you publish it:
+Firebase console → Firestore Database → Rules → paste the whole file → **Publish**.
+Then open Admin → **Settings → Run permissions check** (a green tick means saving is allowed). The same help dialog also
+appears automatically the moment a save is refused. Alternative to editing the email list: create a document in the
+`admins` collection whose ID is your user ID (shown in that dialog and in Settings).
+
+## Adding packages safely
+Admin → **Packages → Add package** adds the new package **after** the existing ones; nothing old is touched (use ↑ to move
+it up, or **Duplicate** to start from an existing package). The original packages can only disappear if you press
+*Remove* on them and confirm, and they then stay removed. Original packages added in future updates appear automatically.

@@ -315,6 +315,12 @@
         <div class="admin-panel-card"><span class="stat-ico s-green"><i class="fa-solid fa-file-excel"></i></span>
           <h3>Exports</h3>
           <p>“Export” on Bookings and Messages creates a real <code>.xlsx</code> file in your browser from exactly what's on screen, including any active search or filter. “Export all” bundles both into one workbook.</p></div>
+        <div class="admin-panel-card"><span class="stat-ico s-green"><i class="fa-solid fa-stethoscope"></i></span>
+          <h3>Database permissions</h3>
+          <p id="permWho">Checking…</p>
+          <p>If saving huts, gallery or prices says <i>“Missing or insufficient permissions”</i>, run this check.</p>
+          <button class="btn-tbhk btn-sunset" id="permCheckBtn" style="margin-top:.8rem;"><i class="fa-solid fa-stethoscope"></i> Run permissions check</button>
+          <div class="diag-result" id="permCheckOut" role="status"></div></div>
         <div class="admin-panel-card"><span class="stat-ico s-blue"><i class="fa-solid fa-mobile-screen"></i></span>
           <h3>Install as an app</h3>
           <p>This console works as an installable app on phones and desktops. Open the site in Chrome or Edge and choose <b>Install</b>, or <b>Add to Home Screen</b> on iPhone.</p></div>
@@ -332,6 +338,7 @@
 <script src="js/catalog.js"></script>
 <script src="js/content.js"></script>
 <script src="js/admin-catalog.js"></script>
+<script src="js/admin-diagnostics.js"></script>
 <script src="js/admin-content.js"></script>
 <script src="js/admin-ui.js"></script>
 <script src="js/admin-extra.js"></script>

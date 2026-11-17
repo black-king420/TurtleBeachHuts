@@ -131,10 +131,6 @@
           if (isLive()) {
             const { auth, fns } = window.tbhkFirebase;
             const cred = await fns.signInWithEmailAndPassword(auth, email, password);
-            const adminList = window.tbhkFirebase.ADMIN_EMAILS || [];
-            if (adminList.includes(email) && !cred.user.emailVerified) {
-              try { await fns.sendEmailVerification(cred.user); window.tbhkToast && window.tbhkToast("Admin accounts need a verified email — we just sent you a link.", "success"); } catch (e3) {}
-            }
             const profile = { uid: cred.user.uid, name: cred.user.displayName || email.split("@")[0], email, provider: "password" };
             setSession(profile);
             redirectAfterAuth(profile);

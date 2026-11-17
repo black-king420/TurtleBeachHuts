@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Admin sign in — Turtle Beach Huts Karachi</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#C1440E">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="icon" type="image/png" href="images/icons/favicon-32.png">
+<style>
+  body.al-body{min-height:100vh;display:grid;place-items:center;padding:calc(1.2rem + env(safe-area-inset-top)) 1rem calc(1.2rem + env(safe-area-inset-bottom));
+    background:radial-gradient(70% 55% at 15% 10%,rgba(246,196,69,.45),transparent 60%),radial-gradient(60% 50% at 90% 95%,rgba(42,169,160,.5),transparent 60%),linear-gradient(150deg,#C1440E,#E8722C 42%,#145C56);
+    background-attachment:fixed;overflow-x:hidden;}
+  .al-orbs{position:fixed;inset:0;pointer-events:none;overflow:hidden;}
+  .al-orbs i{position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.35),rgba(255,255,255,.03) 65%);animation:orb 16s ease-in-out infinite;}
+  .al-orbs i:nth-child(1){width:140px;height:140px;left:6%;top:14%;}
+  .al-orbs i:nth-child(2){width:70px;height:70px;right:12%;top:20%;animation-delay:-5s;}
+  .al-orbs i:nth-child(3){width:100px;height:100px;right:20%;bottom:10%;animation-delay:-9s;}
+  .al-card{position:relative;width:min(440px,100%);padding:2rem 1.7rem 1.6rem;border-radius:30px;color:#fff;
+    background:rgba(255,255,255,.14);backdrop-filter:blur(26px) saturate(1.5);-webkit-backdrop-filter:blur(26px) saturate(1.5);
+    border:1px solid rgba(255,255,255,.3);box-shadow:0 50px 100px -40px rgba(0,0,0,.6);}
+  .al-logo{width:78px;height:78px;border-radius:24px;display:block;margin:0 auto 1rem;box-shadow:0 20px 40px -14px rgba(0,0,0,.55);}
+  .al-card h1{color:#fff;text-align:center;font-size:1.65rem;margin:0 0 .25rem;}
+  .al-sub{text-align:center;color:rgba(255,255,255,.85);font-size:.9rem;margin:0 0 1.2rem;}
+  .al-badge{display:inline-flex;gap:.45rem;align-items:center;margin:0 auto 1rem;padding:.3rem .8rem;border-radius:99px;background:rgba(0,0,0,.22);font:500 .7rem var(--font-mono);letter-spacing:.08em;text-transform:uppercase;}
+  .al-badge-wrap{text-align:center;}
+  .al-tabs{display:grid;grid-template-columns:1fr 1fr;gap:.3rem;padding:.3rem;border-radius:16px;background:rgba(0,0,0,.2);margin-bottom:1.2rem;}
+  .al-tabs button{border:0;border-radius:12px;padding:.6rem;background:transparent;color:rgba(255,255,255,.8);font:700 .85rem var(--font-body);cursor:pointer;transition:all .3s var(--ease);}
+  .al-tabs button.on{background:#fff;color:var(--sunset-deep);box-shadow:0 10px 20px -10px rgba(0,0,0,.5);}
+  .al-field{position:relative;margin-bottom:.8rem;}
+  .al-field i.lead{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.7);pointer-events:none;}
+  .al-field input{width:100%;min-height:52px;padding:.8rem 2.8rem .8rem 2.8rem;border-radius:16px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;font:500 1rem var(--font-body);transition:border-color .25s,background .25s,box-shadow .25s;}
+  .al-field input::placeholder{color:rgba(255,255,255,.65);}
+  .al-field input:focus{outline:none;border-color:var(--gold);background:rgba(255,255,255,.2);box-shadow:0 0 0 4px rgba(246,196,69,.25);}
+  .al-eye{position:absolute;right:.6rem;top:50%;transform:translateY(-50%);width:38px;height:38px;border:0;border-radius:50%;background:transparent;color:rgba(255,255,255,.8);cursor:pointer;}
+  .al-eye:hover{background:rgba(255,255,255,.15);}
+  .al-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:.6rem;min-height:52px;border-radius:16px;border:0;cursor:pointer;font:800 .98rem var(--font-body);transition:transform .3s var(--ease),box-shadow .3s;}
+  .al-btn:active{transform:scale(.98);}
+  .al-btn.primary{background:#fff;color:var(--sunset-deep);box-shadow:0 18px 34px -14px rgba(0,0,0,.55);}
+  .al-btn.primary:hover{transform:translateY(-2px);}
+  .al-btn.google{background:rgba(255,255,255,.12);color:#fff;border:1.5px solid rgba(255,255,255,.35);}
+  .al-btn.google:hover{background:rgba(255,255,255,.22);}
+  .al-btn[disabled]{opacity:.65;cursor:not-allowed;transform:none;}
+  .al-or{display:flex;align-items:center;gap:.8rem;margin:1rem 0;font-size:.75rem;color:rgba(255,255,255,.75);}
+  .al-or::before,.al-or::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.3);}
+  .al-row{display:flex;justify-content:space-between;align-items:center;margin:.1rem 0 1rem;font-size:.82rem;}
+  .al-row a,.al-link{color:var(--gold);font-weight:700;cursor:pointer;background:none;border:0;padding:0;font:inherit;font-weight:700;}
+  .al-msg{display:none;margin-bottom:1rem;padding:.7rem .9rem;border-radius:14px;font-size:.85rem;line-height:1.45;}
+  .al-msg.show{display:block;}
+  .al-msg.err{background:rgba(211,59,59,.28);border:1px solid rgba(255,160,160,.55);}
+  .al-msg.ok{background:rgba(46,158,108,.3);border:1px solid rgba(150,240,190,.5);}
+  .al-foot{text-align:center;margin-top:1.2rem;font-size:.82rem;}
+  .al-foot a{color:rgba(255,255,255,.9);font-weight:600;}
+  .al-state{text-align:center;padding:.6rem 0;}
+  .al-state p{color:rgba(255,255,255,.88);line-height:1.6;}
+  .al-state .al-btn{margin-top:.7rem;}
+  .al-big{font-size:2.6rem;color:var(--gold);margin-bottom:.4rem;}
+  .al-check{width:84px;height:84px;margin:0 auto 1rem;border-radius:50%;display:grid;place-items:center;font-size:2.2rem;background:linear-gradient(145deg,#34D488,#1D9E63);box-shadow:0 0 0 0 rgba(52,212,136,.6);animation:alPop .6s var(--ease) both,alRing 1.6s ease-out .4s infinite;}
+  @keyframes alPop{from{transform:scale(.3);opacity:0;}to{transform:none;opacity:1;}}
+  @keyframes alRing{to{box-shadow:0 0 0 24px rgba(52,212,136,0);}}
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body class="al-body">
+<div class="al-orbs" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<main class="al-card" id="alCard">
+  <img src="images/logo.png" class="al-logo" alt="Turtle Beach Huts Karachi">
+
+  <!-- ===== checking session ===== -->
+  <section id="stateLoading" class="al-state">
+    <h1>Admin console</h1>
+    <div class="g-bubbles on-dark" role="status" aria-label="Loading"><i></i><i></i><i></i><i></i></div>
+    <p style="margin-top:.8rem;font-size:.85rem;">Checking your session…</p>
+  </section>
+
+  <!-- ===== sign in / first-time setup ===== -->
+  <section id="stateForm" hidden>
+    <h1>Admin sign in</h1>
+    <p class="al-sub">Sign in to open your dashboard.</p>
+    <div class="al-badge-wrap"><span class="al-badge" id="modeBadge"><i class="fa-solid fa-satellite-dish"></i> Live</span></div>
+
+    <div class="al-tabs" role="tablist">
+      <button type="button" class="on" data-tab="login" role="tab">Sign in</button>
+      <button type="button" data-tab="setup" role="tab">First-time setup</button>
+    </div>
+
+    <div class="al-msg" id="alMsg" role="alert"></div>
+
+    <form id="loginForm" novalidate>
+      <div class="al-field" id="nameField" hidden>
+        <i class="fa-regular fa-user lead"></i>
+        <input type="text" id="alName" placeholder="Your name" autocomplete="name">
+      </div>
+      <div class="al-field">
+        <i class="fa-regular fa-envelope lead"></i>
+        <input type="email" id="alEmail" placeholder="Admin email" autocomplete="username" inputmode="email" autocapitalize="off" required>
+      </div>
+      <div class="al-field">
+        <i class="fa-solid fa-lock lead"></i>
+        <input type="password" id="alPass" placeholder="Password" autocomplete="current-password" required>
+        <button type="button" class="al-eye" id="alEye" aria-label="Show password"><i class="fa-regular fa-eye"></i></button>
+      </div>
+      <div class="al-row"><span></span><button type="button" class="al-link" id="alForgot">Forgot password?</button></div>
+      <button type="submit" class="al-btn primary" id="alSubmit"><i class="fa-solid fa-right-to-bracket"></i> <span>Sign in to dashboard</span></button>
+    </form>
+
+    <div class="al-or">or</div>
+    <button type="button" class="al-btn google" id="alGoogle"><i class="fa-brands fa-google"></i> Continue with Google</button>
+    <p class="al-foot"><a href="home.html"><i class="fa-solid fa-arrow-left"></i> Back to website</a></p>
+  </section>
+
+  <!-- ===== signed in but not an admin ===== -->
+  <section id="stateDenied" class="al-state" hidden>
+    <div class="al-big"><i class="fa-solid fa-user-lock"></i></div>
+    <h1>Not an admin account</h1>
+    <p id="deniedText">This account doesn't have admin access.</p>
+    <button type="button" class="al-btn primary" id="deniedSwitch"><i class="fa-solid fa-right-left"></i> Sign out &amp; use another account</button>
+    <p class="al-foot"><a href="home.html">Back to website</a></p>
+  </section>
+
+  <!-- ===== success ===== -->
+  <section id="stateSuccess" class="al-state" hidden>
+    <div class="al-check"><i class="fa-solid fa-check"></i></div>
+    <h1 id="welcomeText">Welcome back</h1>
+    <p>Opening your dashboard…</p>
+    <div class="g-bubbles on-dark" role="status"><i></i><i></i><i></i><i></i></div>
+  </section>
+
+  <!-- ===== cannot reach Firebase ===== -->
+  <section id="stateOffline" class="al-state" hidden>
+    <div class="al-big"><i class="fa-solid fa-plug-circle-exclamation"></i></div>
+    <h1>Can't reach the server</h1>
+    <p>The sign-in service didn't load, so the dashboard stays locked. Check your connection and try again.</p>
+    <button type="button" class="al-btn primary" onclick="location.reload()"><i class="fa-solid fa-rotate"></i> Retry</button>
+  </section>
+
+  <!-- ===== demo mode (no Firebase keys) ===== -->
+  <section id="stateDemo" class="al-state" hidden>
+    <div class="al-big"><i class="fa-solid fa-flask"></i></div>
+    <h1>Demo mode</h1>
+    <p>Firebase isn't configured, so no sign-in is needed. The dashboard uses data stored in this browser only.</p>
+    <a href="admin.html" class="al-btn primary"><i class="fa-solid fa-gauge-high"></i> Open dashboard</a>
+  </section>
+</main>
+
+<script type="module" src="js/firebase-config.js"></script>
+<script src="js/main.js"></script>
+<script src="js/admin-login.js"></script>
+</body>
+</html>

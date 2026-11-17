@@ -3,7 +3,7 @@
     ".read": false,
     ".write": false,
     "bookings": {
-      ".read": "auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com')",
+      ".read": "auth != null && (auth.token.email.toLowerCase() === 'ali4@gmail.com')",
       ".indexOn": [
         "createdAt",
         "status",
@@ -11,7 +11,7 @@
       ],
       "$bookingId": {
         ".read": "auth != null && data.child('uid').val() === auth.uid",
-        ".write": "(!data.exists() && newData.exists() && auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && newData.child('uid').val() === auth.uid) || (auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com'))",
+        ".write": "(!data.exists() && newData.exists() && auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && newData.child('uid').val() === auth.uid) || (auth != null && (auth.token.email.toLowerCase() === 'ali4@gmail.com'))",
         ".validate": "newData.hasChildren(['name','phone','package','status','createdAt','uid'])",
         "name": {
           ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
@@ -56,7 +56,7 @@
           ".validate": "newData.val() === auth.uid || data.exists()"
         },
         "status": {
-          ".validate": "(!data.exists() && newData.val() === 'Pending') || (auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com'))"
+          ".validate": "(!data.exists() && newData.val() === 'Pending') || (auth != null && (auth.token.email.toLowerCase() === 'ali4@gmail.com'))"
         },
         "createdAt": {
           ".validate": "newData.val() === now || data.exists()"
@@ -67,12 +67,12 @@
       }
     },
     "messages": {
-      ".read": "auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com')",
+      ".read": "auth != null && (auth.token.email.toLowerCase() === 'ali4@gmail.com')",
       ".indexOn": [
         "createdAt"
       ],
       "$messageId": {
-        ".write": "(!data.exists() && newData.exists()) || (auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com'))",
+        ".write": "(!data.exists() && newData.exists()) || (auth != null && (auth.token.email.toLowerCase() === 'ali4@gmail.com'))",
         ".validate": "newData.hasChildren(['name','email','message','read','createdAt'])",
         "name": {
           ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
@@ -90,7 +90,7 @@
           ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 3000"
         },
         "read": {
-          ".validate": "(!data.exists() && newData.val() === false) || (auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com'))"
+          ".validate": "(!data.exists() && newData.val() === false) || (auth != null && (auth.token.email.toLowerCase() === 'ali4@gmail.com'))"
         },
         "createdAt": {
           ".validate": "newData.val() === now || data.exists()"
@@ -101,9 +101,9 @@
       }
     },
     "newsletter": {
-      ".read": "auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com')",
+      ".read": "auth != null && (auth.token.email.toLowerCase() === 'ali4@gmail.com')",
       "$entryId": {
-        ".write": "(!data.exists() && newData.exists()) || (auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com'))",
+        ".write": "(!data.exists() && newData.exists()) || (auth != null && (auth.token.email.toLowerCase() === 'ali4@gmail.com'))",
         ".validate": "newData.hasChildren(['email','createdAt'])",
         "email": {
           ".validate": "newData.isString() && newData.val().length <= 254 && newData.val().matches(/^.+@.+\\..+$/)"
@@ -118,7 +118,7 @@
     },
     "catalog": {
       ".read": true,
-      ".write": "auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com')",
+      ".write": "auth != null && (auth.token.email.toLowerCase() === 'ali4@gmail.com')",
       "$itemId": {
         ".validate": "newData.hasChildren(['name'])",
         "name": {
@@ -134,7 +134,7 @@
     },
     "huts": {
       ".read": true,
-      ".write": "auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com')",
+      ".write": "auth != null && (auth.token.email.toLowerCase() === 'ali4@gmail.com')",
       "$hutId": {
         ".validate": "newData.hasChildren(['name'])",
         "name": {
@@ -153,7 +153,7 @@
     },
     "gallery": {
       ".read": true,
-      ".write": "auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com')",
+      ".write": "auth != null && (auth.token.email.toLowerCase() === 'ali4@gmail.com')",
       "$picId": {
         ".validate": "newData.hasChildren(['img','cat'])",
         "img": {
@@ -175,7 +175,7 @@
     },
     "users": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || (auth != null && auth.token.email_verified === true && (auth.token.email === 'ali4@gmail.com')))",
+        ".read": "auth != null && (auth.uid === $uid || (auth != null && (auth.token.email.toLowerCase() === 'ali4@gmail.com')))",
         ".write": "auth != null && auth.uid === $uid",
         ".validate": "newData.hasChildren(['role'])",
         "role": {

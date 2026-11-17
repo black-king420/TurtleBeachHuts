@@ -49,6 +49,7 @@
           <button type="button" class="btn-sm-tbhk" data-act="up" ${i === 0 ? 'disabled' : ''} title="Move earlier"><i class="fa-solid fa-arrow-up"></i></button>
           <button type="button" class="btn-sm-tbhk" data-act="down" ${i === n - 1 ? 'disabled' : ''} title="Move later"><i class="fa-solid fa-arrow-down"></i></button>
           <button type="button" class="btn-sm-tbhk" data-act="url"><i class="fa-solid fa-link"></i> Image URL</button>
+          <button type="button" class="btn-sm-tbhk" data-act="dup" title="Copy this package as a starting point"><i class="fa-regular fa-clone"></i> Duplicate</button>
           <button type="button" class="btn-sm-tbhk danger" data-act="del"><i class="fa-solid fa-trash"></i> Remove</button>
         </div>
       </div>
@@ -77,7 +78,12 @@
     const act = btn.dataset.act;
     if (act === 'up' && i > 0) [items[i - 1], items[i]] = [items[i], items[i - 1]];
     else if (act === 'down' && i < items.length - 1) [items[i + 1], items[i]] = [items[i], items[i + 1]];
-    else if (act === 'del') { if (!confirm(`Remove “${items[i].name}”? This takes effect when you press Save.`)) return; items.splice(i, 1); }
+    else if (act === 'del') {
+      const orig = Cat.isOriginal && Cat.isOriginal(items[i].id);
+      if (!confirm(`Remove “${items[i].name}”${orig ? ' — one of your ORIGINAL packages' : ''}? It disappears from the website after you press Save.`)) return;
+      items.splice(i, 1);
+    }
+    else if (act === 'dup') { const c = JSON.parse(JSON.stringify(items[i])); c.id = uid(); c.name = c.name + ' (copy)'; items.splice(i + 1, 0, c); }
     else if (act === 'url') {
       const u = prompt('Paste an image link (https://…) or a site path like images/photo.jpg', items[i].img.startsWith('data:') ? '' : items[i].img);
       if (!u) return; items[i].img = u.trim();
@@ -97,8 +103,9 @@
   });
 
   $('#catAdd').addEventListener('click', () => {
-    draft.items.unshift({ id: uid(), name: 'New package', price: 0, priceNote: '', img: 'images/logo.png', tag: '', featured: false, home: false, desc: 'Describe this package.' });
-    setDirty(true); render(); grid.firstElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // New packages are ADDED AFTER the existing ones — nothing old is touched (use ↑ to move it up if you like)
+    draft.items.push({ id: uid(), name: 'New package', price: 0, priceNote: '', img: 'images/logo.png', tag: '', featured: false, home: false, desc: 'Describe this package.' });
+    setDirty(true); render(); grid.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 
   $('#catFromPrice').addEventListener('input', (e) => { draft.settings.fromPrice = Number(e.target.value) || 0; setDirty(true); });
@@ -113,7 +120,8 @@
       flash(r.live ? 'Saved — live for all visitors ✓' : 'Saved on this device ✓ (connect Firebase to publish to everyone)');
     } catch (err) {
       saveBtn.disabled = false;
-      flash(/quota/i.test(err.message) ? 'Storage full — use smaller pictures or the “Image URL” option.' : 'Could not save: ' + err.message, false);
+      if (window.TBHKDiag && window.TBHKDiag.isPermission(err)) { flash('Not saved — Firebase rules blocked this. See the fix panel.', false); setTimeout(() => window.TBHKDiag.showHelp(), 50); }
+      else flash(/quota/i.test(err.message) ? 'Storage full — use smaller pictures or the “Image URL” option.' : 'Could not save: ' + err.message, false);
     }
   });
 

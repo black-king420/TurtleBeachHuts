@@ -39,7 +39,12 @@
 
   function normalise(c) {
     const out = { settings: Object.assign({}, DEFAULTS.settings, (c && c.settings) || {}), items: [] };
-    const items = c && Array.isArray(c.items) && c.items.length ? c.items : DEFAULTS.items;
+    // ids of built-in packages an admin removed ON PURPOSE (kept in the settings record)
+    out.settings.removedDefaults = Array.isArray(out.settings.removedDefaults) ? out.settings.removedDefaults.filter((x) => typeof x === 'string') : [];
+    let items = c && Array.isArray(c.items) && c.items.length ? c.items.slice() : DEFAULTS.items.slice();
+    // The original packages always stay unless the admin deliberately removed them: add back any that are missing.
+    const have = new Set(items.map((it) => it.id));
+    DEFAULTS.items.forEach((d) => { if (!have.has(d.id) && !out.settings.removedDefaults.includes(d.id)) items.push(d); });
     out.items = items.map((it, i) => ({
       id: it.id || 'item-' + Date.now().toString(36) + i,
       name: it.name || 'Untitled package',
@@ -101,7 +106,13 @@
     esc,
     subscribe(cb) { subs.add(cb); cb(current); startLive(); return () => subs.delete(cb); },
 
+    isOriginal: (id) => DEFAULTS.items.some((d) => d.id === id),
+
     async save(draft) {
+      // Remember which ORIGINAL packages the admin removed on purpose, so they stay removed (and every other one stays).
+      const keep = new Set(((draft && draft.items) || []).map((it) => it.id));
+      draft = Object.assign({}, draft, { settings: Object.assign({}, draft && draft.settings, {
+        removedDefaults: DEFAULTS.items.map((d) => d.id).filter((id) => !keep.has(id)) }) });
       const c = normalise(draft);
       c.items.forEach((it, i) => { it.order = i; });
       await whenReady();

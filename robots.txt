@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /admin.html
+Disallow: /admin-login.html
 Disallow: /auth.html
 
 Sitemap: https://turtlebeachhutskarachi.com/sitemap.xml

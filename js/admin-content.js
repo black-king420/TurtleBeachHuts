@@ -18,7 +18,10 @@
     el.textContent = msg; el.className = 'cat-status ' + (kind || '');
     if (kind === 'ok') setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, 3500);
   }
-  const quotaMsg = (err) => (/quota/i.test(err.message) ? 'Storage full — use fewer/smaller pictures, or add them by link.' : 'Could not save: ' + err.message);
+  const quotaMsg = (err) => {
+    if (window.TBHKDiag && window.TBHKDiag.isPermission(err)) { setTimeout(() => window.TBHKDiag.showHelp(), 50); return 'Not saved — Firebase rules blocked this. See the fix panel.'; }
+    return /quota/i.test(err.message) ? 'Storage full — use fewer/smaller pictures, or add them by link.' : 'Could not save: ' + err.message;
+  };
 
   /* ====================================================================== HUTS */
   (function huts() {
