@@ -14,10 +14,10 @@
 <link rel="icon" href="./images/logo.png" style="border-radius: 35px;">
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+<link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+<link rel="stylesheet" href="vendor/bootstrap/bootstrap.min.css">
+<link rel="stylesheet" href="vendor/swiper/swiper-bundle.min.css">
+<link rel="stylesheet" href="vendor/aos/aos.css">
 <link rel="stylesheet" href="css/style.css">
 
 <script type="application/ld+json">
@@ -139,6 +139,21 @@
 
 <!-- ============ MARQUEE ============ -->
 <div class="marquee" aria-label="Highlights"><div class="mq-track"><span class="mq-item"><i class="fa-solid fa-umbrella-beach"></i>Private beach huts</span><span class="mq-item"><i class="fa-solid fa-fire-flame-curved"></i>BBQ decks</span><span class="mq-item"><i class="fa-solid fa-bolt"></i>Generator backup</span><span class="mq-item"><i class="fa-solid fa-shield-heart"></i>24/7 security</span><span class="mq-item"><i class="fa-solid fa-camera-retro"></i>Photo-ready sunsets</span><span class="mq-item"><i class="fa-solid fa-cake-candles"></i>Birthdays & events</span><span class="mq-item"><i class="fa-solid fa-users"></i>Family & corporate</span><span class="mq-item"><i class="fa-solid fa-restroom"></i>Private washrooms</span><span class="mq-item"><i class="fa-solid fa-umbrella-beach"></i>Private beach huts</span><span class="mq-item"><i class="fa-solid fa-fire-flame-curved"></i>BBQ decks</span><span class="mq-item"><i class="fa-solid fa-bolt"></i>Generator backup</span><span class="mq-item"><i class="fa-solid fa-shield-heart"></i>24/7 security</span><span class="mq-item"><i class="fa-solid fa-camera-retro"></i>Photo-ready sunsets</span><span class="mq-item"><i class="fa-solid fa-cake-candles"></i>Birthdays & events</span><span class="mq-item"><i class="fa-solid fa-users"></i>Family & corporate</span><span class="mq-item"><i class="fa-solid fa-restroom"></i>Private washrooms</span></div></div>
+
+<!-- ============ LATEST UPDATES CAROUSEL (newest Gallery pictures; managed in Admin → Gallery) ============ -->
+<section class="section-tight updates-section" id="updatesSection">
+  <div class="container">
+    <div class="d-flex align-items-end justify-content-between mb-3 flex-wrap gap-2">
+      <div><span class="eyebrow"><span></span> Fresh from the beach</span>
+        <h2 class="mt-2" style="font-size:clamp(1.5rem,3vw,2.2rem);">Latest <em>updates</em></h2></div>
+      <div class="d-flex align-items-center gap-2">
+        <a href="gallery.html" class="btn-tbhk btn-outline-tbhk d-none d-sm-inline-flex" style="padding:.55rem 1.1rem;font-size:.85rem;">View full gallery</a>
+        <div class="offers-nav"><button class="upd-prev" aria-label="Previous"><i class="fa-solid fa-chevron-left"></i></button><button class="upd-next" aria-label="Next"><i class="fa-solid fa-chevron-right"></i></button></div>
+      </div>
+    </div>
+  </div>
+  <div class="swiper updatesSwiper"><div class="swiper-wrapper" id="updatesWrapper"></div><div class="upd-pagination"></div></div>
+</section>
 
 <!-- ============ FEATURED CAROUSEL ============ -->
 <section class="section-tight offers-section">
@@ -477,12 +492,13 @@
   <button class="fab fab-top" aria-label="Back to top"><i class="fa-solid fa-arrow-up"></i></button>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="vendor/swiper/swiper-bundle.min.js"></script>
+<script src="vendor/aos/aos.js"></script>
 <script type="module" src="js/firebase-config.js"></script>
 <script src="js/data-store.js"></script>
 <script src="js/catalog.js"></script>
+<script src="js/content.js"></script>
 
 <script src="js/main.js"></script>
 <script>

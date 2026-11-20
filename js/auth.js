@@ -51,6 +51,13 @@
     localStorage.setItem("tbhk-session", JSON.stringify(profile));
   }
 
+  // Demo mode only (no Firebase keys): never keep a readable password in localStorage — store a salted SHA-256 instead.
+  async function hashPw(email, pw) {
+    const bytes = new TextEncoder().encode("tbhk-demo|" + String(email).toLowerCase() + "|" + pw);
+    const buf = await crypto.subtle.digest("SHA-256", bytes);
+    return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+
   async function upsertUserDoc(uid, data) {
     if (!isLive()) return;
     const { db, fns } = window.tbhkFirebase;
@@ -137,7 +144,10 @@
           } else {
             const users = JSON.parse(localStorage.getItem("tbhk-demo-users") || "{}");
             const rec = users[email];
-            if (!rec || rec.password !== password) throw { code: "auth/invalid-credential" };
+            const h = await hashPw(email, password);
+            // accepts the new hashed record, and upgrades any older plain-text demo record on first successful login
+            if (!rec || !((rec.pwHash && rec.pwHash === h) || (rec.password && rec.password === password))) throw { code: "auth/invalid-credential" };
+            if (rec.password) { delete rec.password; rec.pwHash = h; users[email] = rec; localStorage.setItem("tbhk-demo-users", JSON.stringify(users)); }
             const profile = { uid: "demo-" + email, name: rec.name, email, phone: rec.phone || "", provider: "demo" };
             setSession(profile);
             redirectAfterAuth(profile);
@@ -159,6 +169,8 @@
         const name = $("#registerName").value.trim();
         const email = $("#registerEmail").value.trim();
         const password = $("#registerPassword").value;
+        const adminList = ((window.tbhkFirebase && window.tbhkFirebase.ADMIN_EMAILS) || []).map((x) => String(x).toLowerCase());
+        if (adminList.includes(email.toLowerCase())) { setError(panel, "That address is reserved for the site admin — use Admin sign in instead."); return; }
         const confirmEl = $("#registerConfirm");
         const btn = $("#registerSubmit");
         if (confirmEl && password !== confirmEl.value) { setError(panel, "Passwords don't match."); return; }
@@ -190,7 +202,7 @@
           } else {
             const users = JSON.parse(localStorage.getItem("tbhk-demo-users") || "{}");
             if (users[email]) throw { code: "auth/email-already-in-use" };
-            users[email] = { name, email, phone, password, createdAt: new Date().toISOString() };
+            users[email] = { name, email, phone, pwHash: await hashPw(email, password), createdAt: new Date().toISOString() };
             localStorage.setItem("tbhk-demo-users", JSON.stringify(users));
             const profile = { uid: "demo-" + email, name, email, phone, provider: "demo" };
             setSession(profile);

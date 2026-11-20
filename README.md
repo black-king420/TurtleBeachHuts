@@ -175,3 +175,13 @@ appears automatically the moment a save is refused. Alternative to editing the e
 Admin → **Packages → Add package** adds the new package **after** the existing ones; nothing old is touched (use ↑ to move
 it up, or **Duplicate** to start from an existing package). The original packages can only disappear if you press
 *Remove* on them and confirm, and they then stay removed. Original packages added in future updates appear automatically.
+
+## Home page "Latest updates" carousel
+A large photo carousel near the top of the home page shows the **newest 8 pictures from the Gallery** (autoplay, swipe, arrows,
+"New" tag on the first 3, links to the gallery). To update it: Admin → **Gallery → Add pictures** (new pictures go to the front
+automatically) or **Move to front** on any picture. The first 8 pictures carry a "Home" tag in the admin. No Firebase rules change is needed.
+
+## Security & design update
+See **SECURITY.md** for the audit, what was fixed, and the console steps only you can do (publish rules, restrict the API key,
+App Check, create the admin account). Libraries are now self-hosted in `/vendor`. New: package search & sort, a live
+"your selection" summary on the booking page, redesigned toast notifications, and dark-mode fixes (footer, booking calendar, hut chips).

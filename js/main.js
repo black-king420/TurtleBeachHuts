@@ -110,6 +110,8 @@
     if (isNewsletter) {
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
+        const wait = window.tbhkGuard.cooldown("newsletter", 30000);
+        if (wait) { window.tbhkToast && window.tbhkToast("Please wait " + wait + "s before subscribing again.", "info"); return; }
         const btn = form.querySelector("button");
         const original = btn.textContent;
         btn.textContent = "Subscribing…";
@@ -126,6 +128,21 @@
   });
 
   /* ---------- Toast helper (shared) ---------- */
+  /* ---------- Simple spam guard for public forms (honeypot + cooldown) ---------- */
+  window.tbhkGuard = {
+    // hidden field real people never fill in; bots usually do
+    trapped(form) { const h = form && form.querySelector('input[name="website"]'); return !!(h && h.value.trim()); },
+    // returns seconds left to wait (0 = go ahead and starts a new cooldown)
+    cooldown(key, ms = 15000) {
+      const k = "tbhk-cd-" + key; let last = 0;
+      try { last = Number(localStorage.getItem(k)) || 0; } catch (e) {}
+      const left = ms - (Date.now() - last);
+      if (left > 0) return Math.ceil(left / 1000);
+      try { localStorage.setItem(k, String(Date.now())); } catch (e) {}
+      return 0;
+    },
+  };
+
   window.tbhkToast = function (message, type = "info") {
     let stack = $(".tbhk-toast-stack");
     if (!stack) {
@@ -135,7 +152,13 @@
     }
     const el = document.createElement("div");
     el.className = "tbhk-toast " + type;
-    el.innerHTML = `<i class="fa-solid ${type === "success" ? "fa-circle-check" : type === "error" ? "fa-circle-exclamation" : "fa-bell"}"></i><span>${message}</span>`;
+    // Built with DOM nodes + textContent so a message can never inject HTML (messages may contain guest-supplied names)
+    const ico = document.createElement("i");
+    ico.className = "fa-solid " + (type === "success" ? "fa-circle-check" : type === "error" ? "fa-circle-exclamation" : "fa-bell");
+    const txt = document.createElement("span");
+    txt.textContent = String(message == null ? "" : message);
+    el.setAttribute("role", type === "error" ? "alert" : "status");
+    el.append(ico, txt);
     stack.appendChild(el);
     setTimeout(() => { el.style.opacity = "0"; el.style.transform = "translateY(-8px)"; setTimeout(() => el.remove(), 300); }, 3200);
   };

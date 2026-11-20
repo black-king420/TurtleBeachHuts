@@ -142,7 +142,7 @@
         <figure class="gal-tile" data-i="${i}">
           <div class="gal-img"><img src="${esc(g.img)}" alt="" loading="lazy" onerror="this.src='images/logo.png'">
             <button type="button" class="chip-btn del" data-act="del" title="Delete picture"><i class="fa-solid fa-trash"></i></button>
-            <span class="gal-pos">#${i + 1}</span></div>
+            <span class="gal-pos">#${i + 1}</span>${i < 8 ? '<span class="gal-home"><i class="fa-solid fa-house"></i> Home</span>' : ''}</div>
           <figcaption>
             <input type="text" data-f="caption" value="${esc(g.caption)}" placeholder="Caption (optional)" maxlength="80">
             <div class="gal-row">

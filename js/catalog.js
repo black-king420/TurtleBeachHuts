@@ -196,13 +196,30 @@
   }
 
   let lastSig = '';
+  const view = { q: '', sort: 'default' };            // Packages page search / sort state
+  function viewList(items) {
+    let list = items.slice();
+    const q = view.q.trim().toLowerCase();
+    if (q) list = list.filter((p) => (p.name + ' ' + p.desc + ' ' + p.tag).toLowerCase().includes(q));
+    const price = (p) => (p.price === null ? Infinity : p.price);            // "custom quote" packages sort last
+    if (view.sort === 'asc') list.sort((a, b) => price(a) - price(b));
+    else if (view.sort === 'desc') list.sort((a, b) => (b.price === null ? -1 : b.price) - (a.price === null ? -1 : a.price));
+    else if (view.sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
+    return list;
+  }
   function render(c) {
-    const sig = JSON.stringify(c);
+    const sig = JSON.stringify(c) + '|' + view.q + '|' + view.sort;
     if (sig === lastSig) return; lastSig = sig;
     let dirty = false;
 
     const grid = $('#packagesGrid');
-    if (grid) { grid.innerHTML = c.items.map((p, i) => cardHTML(p, (i % 3) * 100)).join(''); dirty = true; }
+    if (grid) {
+      const list = viewList(c.items);
+      grid.innerHTML = list.length ? list.map((p, i) => cardHTML(p, (i % 3) * 100)).join('')
+        : '<div class="col-12"><div class="pkg-empty"><i class="fa-solid fa-magnifying-glass"></i><b>No packages match “' + esc(view.q) + '”</b><span>Try a different word, or clear the search.</span></div></div>';
+      const cnt = $('#pkgCount'); if (cnt) cnt.textContent = list.length + ' of ' + c.items.length;
+      dirty = true;
+    }
 
     const homeGrid = $('#homePackages');
     if (homeGrid) {
@@ -242,6 +259,12 @@
     if (dirty && window.AOS) setTimeout(() => window.AOS.refreshHard && window.AOS.refreshHard(), 50);
   }
 
-  function boot() { Catalog.subscribe(render); }
+  function boot() {
+    Catalog.subscribe(render);
+    const s = $('#pkgSearch'), o = $('#pkgSort');
+    const again = () => { lastSig = ''; render(current); };
+    if (s) s.addEventListener('input', () => { view.q = s.value; again(); });
+    if (o) o.addEventListener('change', () => { view.sort = o.value; again(); });
+  }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

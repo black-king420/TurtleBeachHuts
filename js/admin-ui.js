@@ -139,3 +139,26 @@
     const v = document.getElementById('view-' + b.dataset.panel); if (v) stagger(v);
   }));
 })();
+
+
+/* ==========================================================================
+   Security: auto sign-out of the admin after 30 minutes without activity
+   (only when connected to Firebase; a shared/forgotten computer can't be used to reach the dashboard)
+   ========================================================================== */
+(function () {
+  'use strict';
+  const IDLE = 30 * 60 * 1000, WARN = 60 * 1000;
+  let idleTimer, warnTimer;
+  const live = () => !!(window.tbhkFirebase && window.tbhkFirebase.auth);
+  function arm() {
+    clearTimeout(idleTimer); clearTimeout(warnTimer);
+    if (!live()) return;
+    warnTimer = setTimeout(() => window.tbhkToast && window.tbhkToast("You'll be signed out in 1 minute because of inactivity.", 'info'), IDLE - WARN);
+    idleTimer = setTimeout(() => {
+      const app = document.getElementById('adminApp');
+      if (app && !app.classList.contains('d-none')) document.getElementById('adminLogout')?.click();
+    }, IDLE);
+  }
+  ['click', 'keydown', 'mousemove', 'touchstart', 'scroll'].forEach((ev) => document.addEventListener(ev, arm, { passive: true }));
+  arm();
+})();

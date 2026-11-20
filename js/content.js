@@ -204,6 +204,33 @@
     const active = document.querySelector('#filterBar .filter-btn.active');
     if (active && active.dataset.filter !== 'all') grid.querySelectorAll('.item').forEach((it) => { it.style.display = it.dataset.cat === active.dataset.filter ? '' : 'none'; });
   }
+  const UPDATES_MAX = 8;
+  let sigU = '';
+  function renderUpdates(list) {
+    const wrap = document.getElementById('updatesWrapper'); if (!wrap) return;
+    const pics = list.slice(0, UPDATES_MAX);                 // newest first (new uploads are added to the front)
+    const sig = JSON.stringify(pics); if (sig === sigU) return; sigU = sig;
+    const section = document.getElementById('updatesSection');
+    if (section) section.style.display = pics.length ? '' : 'none';
+    wrap.innerHTML = pics.map((g, i) => `
+      <div class="swiper-slide"><a class="upd-card" href="gallery.html" aria-label="${esc(g.caption || 'Open gallery')}">
+        <img src="${esc(g.img)}" alt="${esc(g.caption || 'Beach photo')}" ${i < 2 ? '' : 'loading="lazy"'} decoding="async">
+        <span class="upd-cat">${esc(GAL_CATS[g.cat] || '')}</span>
+        ${i < 3 ? '<span class="upd-new">New</span>' : ''}
+        <div class="upd-cap"><b>${esc(g.caption || GAL_CATS[g.cat] || 'Turtle Beach Huts')}</b><span>View in gallery <i class="fa-solid fa-arrow-right"></i></span></div>
+      </a></div>`).join('');
+    const el = document.querySelector('.updatesSwiper');
+    if (window.Swiper && el) {
+      if (el.swiper) el.swiper.destroy(true, true);
+      new window.Swiper(el, {
+        centeredSlides: true, slidesPerView: 1.15, spaceBetween: 14, loop: pics.length >= 5, grabCursor: true, speed: 650,
+        autoplay: { delay: 3800, disableOnInteraction: false, pauseOnMouseEnter: true },
+        pagination: { el: '.upd-pagination', clickable: true },
+        navigation: { nextEl: '.upd-next', prevEl: '.upd-prev' },
+        breakpoints: { 700: { slidesPerView: 1.7, spaceBetween: 18 }, 1100: { slidesPerView: 2.3, spaceBetween: 22 } }
+      });
+    }
+  }
   document.addEventListener('click', (e) => {            // hut photo thumbnails
     const b = e.target.closest('[data-hut-img]'); if (!b) return;
     const card = b.closest('.hut-card'); card.querySelector('.hut-photo img').src = b.dataset.hutImg;
@@ -212,6 +239,7 @@
   function boot() {
     if (document.getElementById('hutsGrid')) huts.subscribe(renderHuts);
     if (document.getElementById('masonryGrid')) gallery.subscribe(renderGallery);
+    if (document.getElementById('updatesWrapper')) gallery.subscribe(renderUpdates);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

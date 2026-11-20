@@ -531,3 +531,92 @@ h1 em,h2 em,h3 em{background:linear-gradient(100deg,#F6C445,#E8722C);-webkit-bac
 .admin-foot-link{margin-left:.8rem;font-size:.75rem;opacity:.55;white-space:nowrap;transition:opacity .25s;}
 .admin-foot-link:hover{opacity:1;}
 .admin-foot-link i{font-size:.65rem;margin-right:.2rem;}
+
+/* ==========================================================================
+   LATEST UPDATES carousel (home) — newest gallery pictures
+   ========================================================================== */
+.updates-section{padding-top:2.2rem;overflow:hidden;}
+.updatesSwiper{padding:10px 0 48px;}
+.updatesSwiper .swiper-slide{opacity:.5;transform:scale(.93);transition:opacity .5s var(--ease),transform .6s var(--ease);}
+.updatesSwiper .swiper-slide-active{opacity:1;transform:none;}
+.upd-card{display:block;position:relative;aspect-ratio:16/10;border-radius:30px;overflow:hidden;box-shadow:var(--shadow-card);color:#fff;background:var(--sand);}
+.upd-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 1.4s var(--ease);}
+.swiper-slide-active .upd-card img{transform:scale(1.06);}
+.upd-card::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(11,33,31,.82) 4%,rgba(11,33,31,.12) 50%,transparent 72%);}
+.upd-cap{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:.25rem;}
+.upd-cap b{font-family:var(--font-display);font-size:clamp(1.05rem,2.2vw,1.45rem);font-weight:600;text-shadow:0 2px 14px rgba(0,0,0,.4);}
+.upd-cap span{font-size:.8rem;font-weight:700;opacity:.9;}
+.upd-cap span i{margin-left:.3rem;transition:transform .3s var(--ease);}
+.upd-card:hover .upd-cap span i{transform:translateX(4px);}
+.upd-cat,.upd-new{position:absolute;top:14px;z-index:2;font:700 .7rem var(--font-body);letter-spacing:.04em;padding:.3rem .8rem;border-radius:99px;}
+.upd-cat{left:14px;background:rgba(255,255,255,.2);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.4);}
+.upd-new{right:14px;background:var(--grad-sunset);box-shadow:0 8px 18px -8px rgba(193,68,14,.8);}
+.upd-pagination{position:absolute;left:0;right:0;bottom:10px;text-align:center;z-index:3;}
+.upd-pagination .swiper-pagination-bullet{width:9px;height:9px;background:var(--ink);opacity:.25;transition:all .3s var(--ease);}
+.upd-pagination .swiper-pagination-bullet-active{width:28px;border-radius:99px;background:var(--sunset);opacity:1;}
+@media (max-width:575.98px){.upd-card{border-radius:24px;aspect-ratio:4/3.1;}.updates-section .offers-nav{display:none;}}
+
+/* honeypot field for spam bots — invisible to people */
+.hp{position:absolute !important;left:-9999px !important;top:auto;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;}
+
+/* ==========================================================================
+   DARK MODE FIXES
+   ========================================================================== */
+/* the footer used the theme's "ink" colour, which turns LIGHT in dark mode → keep it deep teal */
+html[data-theme="dark"] .tbhk-footer{background:#06171a;}
+html[data-theme="dark"] .tbhk-footer::before{background:var(--shell);}
+html[data-theme="dark"] .footer-newsletter{background:rgba(255,255,255,.05);}
+/* FullCalendar (booking page): header row + cells were bright white */
+html[data-theme="dark"] .fc{--fc-page-bg-color:transparent;--fc-neutral-bg-color:rgba(255,255,255,.07);--fc-neutral-text-color:var(--ink-faint);
+  --fc-border-color:rgba(255,255,255,.12);--fc-today-bg-color:rgba(232,114,44,.2);--fc-highlight-color:rgba(232,114,44,.18);color:var(--ink);}
+html[data-theme="dark"] .fc .fc-col-header-cell,html[data-theme="dark"] .fc .fc-scrollgrid-section-header>*{background:rgba(255,255,255,.07);}
+html[data-theme="dark"] .fc .fc-col-header-cell-cushion,html[data-theme="dark"] .fc .fc-daygrid-day-number{color:var(--ink);}
+html[data-theme="dark"] .fc .fc-day-other .fc-daygrid-day-number{color:var(--ink-faint);}
+html[data-theme="dark"] .fc .fc-daygrid-day.tbhk-booked{background:rgba(193,68,14,.28);}
+html[data-theme="dark"] .hut-chip,html[data-theme="dark"] .upd-cat{background:rgba(255,255,255,.08);color:var(--gold);}
+html[data-theme="dark"] .upd-cat{color:#fff;}
+html[data-theme="dark"] .zeeshan-card .z-dot{border-color:#145C56;}
+
+/* ==========================================================================
+   TOASTS — glass cards with a coloured icon and a countdown bar
+   ========================================================================== */
+.tbhk-toast-stack{top:calc(var(--nav-h) + var(--safe-t) + 10px);right:max(14px,var(--safe-r));max-width:min(380px,calc(100vw - 28px));}
+.tbhk-toast,.tbhk-toast.success,.tbhk-toast.error{
+  position:relative;overflow:hidden;max-width:none;gap:.8rem;padding:.8rem 1rem .95rem;border-radius:18px;
+  background:var(--glass);color:var(--ink);backdrop-filter:blur(18px) saturate(1.6);-webkit-backdrop-filter:blur(18px) saturate(1.6);
+  border:1px solid var(--glass-border);box-shadow:0 26px 50px -22px rgba(16,48,47,.55);line-height:1.4;
+  transition:opacity .3s var(--ease),transform .3s var(--ease);
+}
+.tbhk-toast i{width:32px;height:32px;flex:0 0 32px;border-radius:11px;display:grid;place-items:center;color:#fff;font-size:.9rem;background:linear-gradient(145deg,#2AA9A0,#145C56);}
+.tbhk-toast.success i{background:linear-gradient(145deg,#34D488,#1D9E63);}
+.tbhk-toast.error i{background:linear-gradient(145deg,#F06A6A,#C0392B);}
+.tbhk-toast::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:100%;transform-origin:left;background:var(--sunset);animation:toastBar 3.2s linear forwards;}
+.tbhk-toast.success::after{background:#2E9E6C;}.tbhk-toast.error::after{background:#D33B3B;}
+@keyframes toastBar{to{transform:scaleX(0);}}
+@media (max-width:991.98px){.tbhk-toast-stack{left:14px;right:14px;max-width:none;}}
+
+/* ==========================================================================
+   PACKAGES TOOLBAR + BOOKING SUMMARY
+   ========================================================================== */
+.pkg-toolbar{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;margin:0 0 1.6rem;padding:.6rem;border-radius:22px;background:var(--glass);
+  border:1px solid var(--glass-border);backdrop-filter:blur(14px);box-shadow:var(--shadow-soft);}
+.pkg-search{position:relative;flex:1 1 240px;min-width:0;}
+.pkg-search i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--ink-faint);pointer-events:none;}
+.pkg-search input,.pkg-toolbar select{width:100%;min-height:46px;border-radius:14px;border:1.5px solid rgba(16,48,47,.12);background:var(--white);color:var(--ink);font:600 .92rem var(--font-body);padding:.5rem 1rem;}
+.pkg-search input{padding-left:2.6rem;}
+.pkg-toolbar select{width:auto;flex:0 0 auto;cursor:pointer;}
+.pkg-search input:focus,.pkg-toolbar select:focus{outline:none;border-color:var(--sunset);box-shadow:0 0 0 4px rgba(232,114,44,.16);}
+.pkg-toolbar .soft-chip{margin-left:auto;margin-right:.4rem;font:700 .72rem var(--font-mono);padding:.4rem .85rem;border-radius:99px;background:var(--sunset-light);color:var(--sunset-deep);}
+.pkg-empty{display:flex;flex-direction:column;align-items:center;gap:.4rem;text-align:center;padding:3rem 1rem;color:var(--ink-soft);}
+.pkg-empty i{font-size:2rem;color:var(--sunset);}
+@media (max-width:575.98px){.pkg-toolbar select{flex:1 1 100%;width:100%;}.pkg-toolbar .soft-chip{margin:0 auto;}}
+
+.book-summary{display:flex;align-items:center;gap:.9rem;padding:.9rem 1rem;margin-bottom:1.3rem;border-radius:20px;color:#fff;
+  background:radial-gradient(120% 160% at 0% 0%,#2AA9A0 0%,#145C56 60%,#0B2F2C 100%);box-shadow:0 22px 44px -24px rgba(20,92,86,.9);}
+.bs-ico{width:46px;height:46px;flex:0 0 46px;border-radius:15px;display:grid;place-items:center;font-size:1.15rem;background:var(--grad-sunset);box-shadow:0 12px 22px -10px rgba(193,68,14,.9);}
+.bs-main{flex:1;min-width:0;display:flex;flex-direction:column;}
+.bs-main b{font-family:var(--font-display);font-size:1.05rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bs-main span{font-size:.78rem;color:rgba(255,255,255,.8);}
+.bs-price{font:700 .92rem var(--font-mono);color:var(--gold);white-space:nowrap;}
+@media (max-width:420px){.bs-price{font-size:.8rem;}}
+html[data-theme="dark"] .fab-top{background:var(--sand-deep);color:var(--gold);}

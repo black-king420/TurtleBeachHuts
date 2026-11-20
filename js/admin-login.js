@@ -98,6 +98,11 @@
       $('#alEye i').className = on ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
     };
 
+    // Slow down guessing: after 5 wrong attempts, wait 30 seconds (Firebase also rate-limits on its side)
+    let fails = 0, lockUntil = 0;
+    const locked = () => { const s = Math.ceil((lockUntil - Date.now()) / 1000); return s > 0 ? s : 0; };
+    const noteFail = () => { if (++fails >= 5) { lockUntil = Date.now() + 30000; fails = 0; } };
+
     const busy = (btn, v, label) => { btn.disabled = v; if (label) btn.querySelector('span').textContent = label; };
 
     /* email + password */
@@ -105,6 +110,7 @@
       e.preventDefault(); msg('');
       const email = $('#alEmail').value.trim(), pass = $('#alPass').value, name = $('#alName').value.trim();
       const btn = $('#alSubmit'), idle = mode === 'setup' ? 'Create admin account' : 'Sign in to dashboard';
+      if (locked()) return msg('Too many attempts — please wait ' + locked() + ' seconds.', 'err');
       if (!email || !pass) return msg('Enter your admin email and password.', 'err');
       if (mode === 'setup') {
         if (!isAdminEmail(email)) return msg("That email isn't on the admin list. Add it to ADMIN_EMAILS in js/firebase-config.js (and in the Firestore rules) first.", 'err');
@@ -126,7 +132,7 @@
         }
         enter(cred.user);
       } catch (err) {
-        busy(btn, false, idle); msg(friendly(err), 'err');
+        busy(btn, false, idle); noteFail(); msg(friendly(err), 'err');
       }
     });
 

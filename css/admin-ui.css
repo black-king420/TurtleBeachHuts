@@ -608,3 +608,7 @@ html[data-theme="dark"] .panel-hint{background:rgba(232,114,44,.14);}
 .diag-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem;}
 .diag-actions .btn-tbhk{flex:1 1 auto;justify-content:center;}
 html[data-theme="dark"] .diag-result.ok{color:#7be0ae;}html[data-theme="dark"] .diag-result.err{color:#ff9d9d;}
+
+/* Home-carousel tag on the first 8 gallery pictures */
+.gal-home{position:absolute;right:8px;top:8px;display:inline-flex;gap:.3rem;align-items:center;background:var(--grad-sunset);color:#fff;font:800 .65rem var(--font-body);padding:.2rem .55rem;border-radius:99px;box-shadow:0 6px 14px -6px rgba(193,68,14,.8);}
+.gal-img .chip-btn.del{top:auto;bottom:8px;}
